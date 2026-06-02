@@ -80,6 +80,7 @@ const i18n = {
         habits_timer_start: "Iniciar",
         habits_timer_pause: "Pausar",
         habits_timer_resume: "Reanudar",
+        weekly_plan_title: "Plan Semanal Hepático",
         habits_list_title: "Selecciona tu Rutina de hoy",
         resources_intro_title: "Biblioteca & Multimedia",
         resources_intro_desc: "Accede a videos prácticos de movilidad, música motivadora para entrenar y guías oficiales de salud hepática sin costo.",
@@ -183,6 +184,7 @@ const i18n = {
         habits_timer_start: "Start",
         habits_timer_pause: "Pause",
         habits_timer_resume: "Resume",
+        weekly_plan_title: "Weekly Liver Plan",
         habits_list_title: "Select your Routine for today",
         resources_intro_title: "Library & Multimedia",
         resources_intro_desc: "Access practical mobility videos, motivational training music, and official liver health guides for free.",
@@ -796,40 +798,323 @@ function closeRecipeModal() {
 }
 
 // --- MICRO-HABITS TIMER ---
+// ==========================================
+// GYM / HABITS - FULL PROFESSIONAL SYSTEM
+// ==========================================
+
+// Comprehensive exercise database (bilingual)
+const exerciseDb = {
+    es: [
+        {
+            id: 0, cat: "legs", icon: "🦵", anim: "bounce",
+            name: "Elevación de Talones (Sóleo)", diff: "Fácil", duration: 300, kcal: 15, points: 5,
+            muscles: ["Piernas", "Glucosa"],
+            desc: "El músculo sóleo consume glucosa incluso en reposo. Hazlo en cualquier lugar, incluso sentado en la oficina.",
+            steps: [
+                "Párate derecho con pies separados al ancho de los hombros",
+                "Levanta los talones lentamente hasta quedar en punta de pies",
+                "Aguanta 1 segundo en la posición alta",
+                "Baja despacio y repite sin parar durante 5 minutos"
+            ]
+        },
+        {
+            id: 1, cat: "core", icon: "💪", anim: "pulse",
+            name: "Vacíos Abdominales (Plancha Isométrica)", diff: "Medio", duration: 180, kcal: 12, points: 4,
+            muscles: ["Abdomen", "Core"],
+            desc: "Contrae el abdomen como si quisieras tocar el ombligo con la espalda. Elimina grasa visceral de forma directa.",
+            steps: [
+                "Ponte en posición de plancha: manos bajo los hombros, espalda recta",
+                "Contrae el abdomen hacia adentro y arriba (vacío abdominal)",
+                "Mantén la posición sin retener el aire, respira normal",
+                "Aguanta 30 segundos, descansa 10 segundos y repite"
+            ]
+        },
+        {
+            id: 2, cat: "breath", icon: "🫁", anim: "pulse",
+            name: "Respiración Diafragmática", diff: "Fácil", duration: 180, kcal: 5, points: 4,
+            muscles: ["Estrés", "Cortisol"],
+            desc: "Reduce el cortisol que acumula grasa abdominal. Activar el nervio vago mejora la función hepática directamente.",
+            steps: [
+                "Siéntate cómodo con una mano en el pecho y otra en el abdomen",
+                "Inhala lento por la nariz por 4 segundos, el abdomen debe expandirse",
+                "Aguanta 2 segundos sin respirar",
+                "Exhala por la boca por 6 segundos, el abdomen baja. Repite 10 veces"
+            ]
+        },
+        {
+            id: 3, cat: "arms", icon: "🦾", anim: "bounce",
+            name: "Flexiones de Pared", diff: "Fácil", duration: 180, kcal: 10, points: 4,
+            muscles: ["Brazos", "Pecho"],
+            desc: "La versión más accesible de las flexiones. Activa la musculatura del tren superior y mejora el metabolismo basal.",
+            steps: [
+                "Párate a 60 cm de la pared, pon las palmas al ancho de los hombros",
+                "Dobla los codos lentamente y acércate a la pared",
+                "Empuja fuerte para volver a la posición inicial",
+                "Completa 3 series de 15 repeticiones con descanso de 30 segundos"
+            ]
+        },
+        {
+            id: 4, cat: "legs", icon: "🏋️", anim: "bounce",
+            name: "Sentadillas con Peso Corporal", diff: "Medio", duration: 300, kcal: 25, points: 6,
+            muscles: ["Glúteos", "Piernas", "Glucosa"],
+            desc: "El ejercicio más eficiente para bajar la glucosa en sangre. Los músculos grandes actúan como esponjas de glucosa.",
+            steps: [
+                "Para con pies separados al ancho de los hombros, punta de pies ligeramente hacia afuera",
+                "Baja lento como si fueras a sentarte en una silla imaginaria",
+                "Las rodillas siguen la línea de los pies, espalda recta",
+                "Sube empujando los talones contra el suelo. Completa 3 series de 20"
+            ]
+        },
+        {
+            id: 5, cat: "stretch", icon: "🧘", anim: "rotate",
+            name: "Torsión Espinal Sentado", diff: "Fácil", duration: 120, kcal: 4, points: 3,
+            muscles: ["Espalda", "Hígado"],
+            desc: "La torsión suave comprime y descomprime el hígado, mejorando el flujo de bilis y la circulación portal.",
+            steps: [
+                "Siéntate en el borde de la silla con la espalda recta",
+                "Coloca la mano derecha en la rodilla izquierda",
+                "Gira el torso suavemente hacia la izquierda, aguanta 20 segundos",
+                "Cambia de lado. Repite 3 veces por lado, respirando profundo"
+            ]
+        },
+        {
+            id: 6, cat: "core", icon: "🔄", anim: "rotate",
+            name: "Crunch Abdominal Suave", diff: "Medio", duration: 240, kcal: 18, points: 5,
+            muscles: ["Abdomen", "Recto"],
+            desc: "Fortalece los músculos del abdomen para proteger el hígado y mejorar la postura que afecta la digestión.",
+            steps: [
+                "Acuéstate boca arriba, rodillas dobladas, pies apoyados en el suelo",
+                "Entrecruza los dedos detrás de la cabeza sin jalar el cuello",
+                "Exhala y sube los hombros 30 cm del suelo contrayendo el abdomen",
+                "Baja lento sin apoyar la espalda completamente. Haz 3 series de 15"
+            ]
+        },
+        {
+            id: 7, cat: "stretch", icon: "🌊", anim: "bounce",
+            name: "Caminata Activa en Casa", diff: "Fácil", duration: 300, kcal: 30, points: 6,
+            muscles: ["Cuerpo Completo", "Circulación"],
+            desc: "Caminar 5 minutos después de comer reduce el pico de glucosa un 30%. El movimiento más simple y poderoso.",
+            steps: [
+                "Camina de un cuarto a otro o en el lugar, levantando las rodillas",
+                "Mantén los brazos en movimiento sincronizados con las piernas",
+                "El ritmo debe ser moderado, sin agitarte demasiado",
+                "Hazlo especialmente 10-15 minutos después de cada comida"
+            ]
+        }
+    ],
+    en: [
+        {
+            id: 0, cat: "legs", icon: "🦵", anim: "bounce",
+            name: "Calf Raises (Soleus Activation)", diff: "Easy", duration: 300, kcal: 15, points: 5,
+            muscles: ["Legs", "Glucose"],
+            desc: "The soleus muscle burns glucose even at rest. Do it anywhere, even sitting at your desk.",
+            steps: [
+                "Stand straight with feet shoulder-width apart",
+                "Slowly raise your heels until you are on your tiptoes",
+                "Hold for 1 second at the top position",
+                "Lower slowly and repeat continuously for 5 minutes"
+            ]
+        },
+        {
+            id: 1, cat: "core", icon: "💪", anim: "pulse",
+            name: "Abdominal Vacuum (Isometric Plank)", diff: "Medium", duration: 180, kcal: 12, points: 4,
+            muscles: ["Abdomen", "Core"],
+            desc: "Draw your belly button toward your spine. Directly targets visceral fat around your liver.",
+            steps: [
+                "Get into plank position: hands under shoulders, straight back",
+                "Pull your abdomen inward and upward (abdominal vacuum)",
+                "Hold without holding your breath, breathe normally",
+                "Hold 30 seconds, rest 10 seconds, repeat"
+            ]
+        },
+        {
+            id: 2, cat: "breath", icon: "🫁", anim: "pulse",
+            name: "Diaphragmatic Breathing", diff: "Easy", duration: 180, kcal: 5, points: 4,
+            muscles: ["Stress", "Cortisol"],
+            desc: "Reduces cortisol that accumulates belly fat. Activating the vagus nerve directly improves liver function.",
+            steps: [
+                "Sit comfortably with one hand on chest and one on belly",
+                "Inhale slowly through your nose for 4 seconds, belly should expand",
+                "Hold for 2 seconds",
+                "Exhale through your mouth for 6 seconds, belly drops. Repeat 10 times"
+            ]
+        },
+        {
+            id: 3, cat: "arms", icon: "🦾", anim: "bounce",
+            name: "Wall Push-Ups", diff: "Easy", duration: 180, kcal: 10, points: 4,
+            muscles: ["Arms", "Chest"],
+            desc: "The most accessible push-up variation. Activates upper body muscles and boosts basal metabolism.",
+            steps: [
+                "Stand 60 cm from a wall, palms shoulder-width apart on wall",
+                "Slowly bend elbows and lean toward the wall",
+                "Push strongly back to starting position",
+                "Complete 3 sets of 15 reps with 30 second rest"
+            ]
+        },
+        {
+            id: 4, cat: "legs", icon: "🏋️", anim: "bounce",
+            name: "Bodyweight Squats", diff: "Medium", duration: 300, kcal: 25, points: 6,
+            muscles: ["Glutes", "Legs", "Glucose"],
+            desc: "The most efficient exercise to lower blood glucose. Large muscles act as glucose sponges.",
+            steps: [
+                "Stand feet shoulder-width apart, toes slightly outward",
+                "Lower slowly as if sitting in an imaginary chair",
+                "Knees follow the line of your feet, back straight",
+                "Push through your heels to rise. Complete 3 sets of 20"
+            ]
+        },
+        {
+            id: 5, cat: "stretch", icon: "🧘", anim: "rotate",
+            name: "Seated Spinal Twist", diff: "Easy", duration: 120, kcal: 4, points: 3,
+            muscles: ["Back", "Liver"],
+            desc: "Gentle twisting compresses and decompresses the liver, improving bile flow and portal circulation.",
+            steps: [
+                "Sit on edge of chair with straight back",
+                "Place right hand on left knee",
+                "Gently rotate torso to the left, hold 20 seconds",
+                "Switch sides. Repeat 3 times per side, breathing deeply"
+            ]
+        },
+        {
+            id: 6, cat: "core", icon: "🔄", anim: "rotate",
+            name: "Gentle Crunches", diff: "Medium", duration: 240, kcal: 18, points: 5,
+            muscles: ["Abdomen", "Rectus"],
+            desc: "Strengthens abdominal muscles to protect the liver and improve posture that affects digestion.",
+            steps: [
+                "Lie on your back, knees bent, feet flat on floor",
+                "Interlace fingers behind head without pulling on neck",
+                "Exhale and lift shoulders 30 cm off floor, contracting abs",
+                "Lower slowly without fully resting back. Do 3 sets of 15"
+            ]
+        },
+        {
+            id: 7, cat: "stretch", icon: "🌊", anim: "bounce",
+            name: "Active Walking Indoors", diff: "Easy", duration: 300, kcal: 30, points: 6,
+            muscles: ["Full Body", "Circulation"],
+            desc: "Walking 5 minutes after eating reduces glucose peaks by 30%. The simplest and most powerful movement.",
+            steps: [
+                "Walk from room to room or march in place, lifting knees",
+                "Keep arms moving in sync with legs",
+                "Maintain a moderate pace without getting too winded",
+                "Do it especially 10-15 minutes after every meal"
+            ]
+        }
+    ]
+};
+
+// Weekly hepatic training plan
+const weeklyPlan = {
+    es: [
+        { day: "Lun", icon: "🦵", focus: "Piernas\n& Glucosa", done: false },
+        { day: "Mar", icon: "🫁", focus: "Respira-\nción", done: false },
+        { day: "Mié", icon: "💪", focus: "Core\n& Abdomen", done: false },
+        { day: "Jue", icon: "🌊", focus: "Caminata\nActiva", done: false },
+        { day: "Vie", icon: "🧘", focus: "Estira-\nmiento", done: false }
+    ],
+    en: [
+        { day: "Mon", icon: "🦵", focus: "Legs\n& Glucose", done: false },
+        { day: "Tue", icon: "🫁", focus: "Breath-\ning", done: false },
+        { day: "Wed", icon: "💪", focus: "Core\n& Abs", done: false },
+        { day: "Thu", icon: "🌊", focus: "Active\nWalk", done: false },
+        { day: "Fri", icon: "🧘", focus: "Stretch-\ning", done: false }
+    ]
+};
+
+let activeFilter = 'all';
+
 function renderHabitsSelector() {
     const listContainer = document.getElementById("habits-selector-list");
     if (!listContainer) return;
 
-    const list = habitsList[userState.lang];
-    listContainer.innerHTML = list.map((habit, idx) => `
-        <div class="habit-row ${userState.activeHabitIndex === idx ? 'active' : ''}" onclick="selectHabit(${idx})">
-            <div class="habit-meta">
-                <h4>${habit.name}</h4>
-                <span>⏱️ ${habit.duration / 60} ${userState.lang === 'es' ? 'Minutos' : 'Minutes'} • +${habit.points} pts</span>
+    const list = exerciseDb[userState.lang];
+    const filtered = activeFilter === 'all' ? list : list.filter(e => e.cat === activeFilter);
+    const diffMap = { es: { Fácil: "", Medio: "medio", Avanzado: "avanzado" }, en: { Easy: "", Medium: "medio", Advanced: "avanzado" } };
+
+    listContainer.innerHTML = filtered.map(ex => `
+        <div class="gym-ex-card ${userState.activeHabitIndex === ex.id ? 'selected' : ''}" onclick="selectHabit(${ex.id})">
+            <span class="gym-ex-icon">${ex.icon}</span>
+            <div class="gym-ex-name">${ex.name}</div>
+            <div class="gym-ex-meta">
+                <span class="gym-ex-time">⏱ ${ex.duration / 60} min</span>
+                <span class="gym-ex-kcal">🔥 ${ex.kcal} kcal</span>
             </div>
-            <div class="habit-checkmark">➔</div>
+            <div class="gym-ex-diff">${ex.diff}</div>
         </div>
     `).join('');
+
+    renderWeeklyPlan();
 }
 
-function selectHabit(idx) {
+function renderWeeklyPlan() {
+    const container = document.getElementById("weekly-plan-grid");
+    if (!container) return;
+    const today = new Date().getDay(); // 0=Sun, 1=Mon...5=Fri
+    const plan = weeklyPlan[userState.lang];
+    container.innerHTML = plan.map((day, i) => {
+        const isToday = (i + 1) === today; // Mon=1
+        const isDone = userState.completedHabitsCount > i;
+        return `
+        <div class="week-day-col">
+            <div class="week-day-label">${day.day}</div>
+            <div class="week-day-pill ${isDone ? 'done' : ''} ${isToday && !isDone ? 'today' : ''}">
+                <span class="week-day-pill-icon">${isDone ? '✅' : day.icon}</span>
+                <span class="week-day-pill-name">${day.focus.replace('\n', '<br>')}</span>
+            </div>
+        </div>`;
+    }).join('');
+}
+
+function filterHabits(cat) {
+    activeFilter = cat;
+    document.querySelectorAll('.cat-chip').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.cat === cat);
+    });
+    renderHabitsSelector();
+}
+
+function selectHabit(id) {
     if (userState.timerRunning) {
-        if (!confirm(userState.lang === 'es' ? "Hay un cronómetro activo. ¿Cambiar de hábito?" : "Timer is running. Switch habit?")) {
-            return;
-        }
+        const msg = userState.lang === 'es' ? "Hay un cronómetro activo. ¿Cambiar de ejercicio?" : "Timer is running. Switch exercise?";
+        if (!confirm(msg)) return;
         clearInterval(userState.timerInterval);
         userState.timerRunning = false;
-        document.getElementById("btn-timer-toggle").textContent = i18n[userState.lang].habits_timer_start;
+        document.getElementById("btn-timer-toggle").textContent = '▶ ' + i18n[userState.lang].habits_timer_start;
     }
 
-    userState.activeHabitIndex = idx;
-    const selected = habitsList[userState.lang][idx];
-    
-    document.getElementById("current-habit-title").textContent = selected.name;
-    document.getElementById("current-habit-desc").textContent = selected.desc;
-    userState.timerSecondsLeft = selected.duration;
+    userState.activeHabitIndex = id;
+    const ex = exerciseDb[userState.lang].find(e => e.id === id);
+    if (!ex) return;
+
+    // Update timer card
+    document.getElementById("current-habit-title").textContent = ex.name;
+    document.getElementById("current-habit-desc").textContent = ex.desc;
+    document.getElementById("gym-calorie-badge").textContent = `~${ex.kcal} kcal`;
+    document.getElementById("exercise-anim-icon").textContent = ex.icon;
+    document.getElementById("gym-diff-badge").textContent = ex.diff;
+
+    // Difficulty badge class
+    const diffBadge = document.getElementById("gym-diff-badge");
+    diffBadge.className = "gym-diff-badge";
+    const diffLower = ex.diff.toLowerCase();
+    if (diffLower.includes('medio') || diffLower.includes('medium')) diffBadge.classList.add("medio");
+    if (diffLower.includes('avanz') || diffLower.includes('advanc')) diffBadge.classList.add("avanzado");
+
+    // Update muscle tags
+    document.getElementById("gym-muscle-tags").innerHTML = ex.muscles.map(m => `<span class="muscle-tag">${m}</span>`).join('');
+
+    // Update animation class
+    const icon = document.getElementById("exercise-anim-icon");
+    icon.className = `exercise-anim-icon ${ex.anim}`;
+
+    // Update steps
+    document.getElementById("gym-steps-list").innerHTML = ex.steps.map(s => `<li>${s}</li>`).join('');
+
+    userState.timerSecondsLeft = ex.duration;
     updateTimerDisplay();
     renderHabitsSelector();
+
+    // Scroll timer into view
+    document.getElementById("gym-active-card").scrollIntoView({ behavior: "smooth", block: "nearest" });
 }
 
 function updateTimerDisplay() {
@@ -842,15 +1127,18 @@ function updateTimerDisplay() {
 function toggleTimer() {
     const button = document.getElementById("btn-timer-toggle");
     const dict = i18n[userState.lang];
-    
+
     if (userState.timerRunning) {
         clearInterval(userState.timerInterval);
         userState.timerRunning = false;
-        button.textContent = dict.habits_timer_resume;
+        button.textContent = '▶ ' + dict.habits_timer_resume;
     } else {
         userState.timerRunning = true;
-        button.textContent = dict.habits_timer_pause;
-        
+        button.textContent = '⏸ ' + dict.habits_timer_pause;
+
+        // Animate exercise icon faster while running
+        document.getElementById("exercise-anim-icon").style.animationDuration = "0.8s";
+
         userState.timerInterval = setInterval(() => {
             if (userState.timerSecondsLeft > 0) {
                 userState.timerSecondsLeft--;
@@ -858,12 +1146,16 @@ function toggleTimer() {
             } else {
                 clearInterval(userState.timerInterval);
                 userState.timerRunning = false;
-                button.textContent = dict.habits_timer_start;
-                
-                const activeHabit = habitsList[userState.lang][userState.activeHabitIndex];
-                alert(userState.lang === 'es' ? `¡Buen trabajo! Has completado ${activeHabit.name}. +${activeHabit.points} puntos.` : `Good job! You completed ${activeHabit.name}. +${activeHabit.points} points.`);
-                
-                userState.healthScore = Math.min(100, userState.healthScore + activeHabit.points);
+                button.textContent = '▶ ' + dict.habits_timer_start;
+                document.getElementById("exercise-anim-icon").style.animationDuration = "";
+
+                const ex = exerciseDb[userState.lang].find(e => e.id === userState.activeHabitIndex) || exerciseDb[userState.lang][0];
+                const msg = userState.lang === 'es'
+                    ? `🎉 ¡Excelente! Completaste "${ex.name}".\n+${ex.points} puntos de salud hepática.`
+                    : `🎉 Great job! You completed "${ex.name}".\n+${ex.points} liver health points.`;
+                alert(msg);
+
+                userState.healthScore = Math.min(100, userState.healthScore + ex.points);
                 userState.completedHabitsCount++;
                 userState.lastHabitTime = Date.now();
                 updateDashboardUI();
@@ -877,13 +1169,13 @@ function toggleTimer() {
 function resetTimer() {
     clearInterval(userState.timerInterval);
     userState.timerRunning = false;
-    document.getElementById("btn-timer-toggle").textContent = i18n[userState.lang].habits_timer_start;
-    
-    const activeHabit = habitsList[userState.lang][userState.activeHabitIndex];
-    userState.timerSecondsLeft = activeHabit.duration;
+    document.getElementById("btn-timer-toggle").textContent = '▶ ' + i18n[userState.lang].habits_timer_start;
+    document.getElementById("exercise-anim-icon").style.animationDuration = "";
+
+    const ex = exerciseDb[userState.lang].find(e => e.id === userState.activeHabitIndex) || exerciseDb[userState.lang][0];
+    userState.timerSecondsLeft = ex.duration;
     updateTimerDisplay();
 }
-
 // ==========================================
 // MUSIC PLAYER LOGIC (ROYALTY FREE AUDIO)
 // ==========================================

@@ -1,4 +1,4 @@
-/* ==========================================
+﻿/* ==========================================
    HEPAFIT AI SYSTEM DESIGN - PROFESSIONAL SCHEME
    ========================================== */
 
@@ -989,6 +989,383 @@ body {
 .habit-meta h4 { font-size: 0.85rem; font-weight: 600; }
 .habit-meta span { font-size: 0.7rem; color: var(--text-muted); }
 .habit-checkmark { font-size: 1rem; color: var(--text-success); }
+
+/* ==========================================
+   GYM / HABITS PROFESSIONAL REDESIGN
+   ========================================== */
+
+/* Active Exercise Card */
+.gym-active-card {
+    padding: 1.5rem 1.25rem;
+}
+
+.gym-exercise-display {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    margin-bottom: 1.25rem;
+}
+
+.exercise-anim-box {
+    width: 90px;
+    height: 90px;
+    background: radial-gradient(circle at center, rgba(16,185,129,0.12), rgba(15,23,42,0.9));
+    border: 2px solid rgba(16,185,129,0.3);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    position: relative;
+    overflow: hidden;
+}
+
+.exercise-anim-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(16,185,129,0.08) 0%, transparent 70%);
+    border-radius: 18px;
+}
+
+.exercise-anim-icon {
+    font-size: 3rem;
+    animation: exerciseBounce 1.2s ease-in-out infinite;
+    display: block;
+    position: relative;
+    z-index: 1;
+}
+
+@keyframes exerciseBounce {
+    0%, 100% { transform: translateY(0) scale(1); }
+    50% { transform: translateY(-8px) scale(1.08); }
+}
+
+.exercise-anim-icon.pulse {
+    animation: exercisePulse 0.8s ease-in-out infinite;
+}
+
+@keyframes exercisePulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
+}
+
+.exercise-anim-icon.rotate {
+    animation: exerciseRotate 2s linear infinite;
+}
+
+@keyframes exerciseRotate {
+    from { transform: rotate(-15deg); }
+    to { transform: rotate(15deg); }
+}
+
+.gym-timer-block {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.timer-display {
+    font-size: 3.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--primary-light);
+    text-shadow: 0 0 20px rgba(16, 185, 129, 0.4);
+    line-height: 1;
+}
+
+.gym-calorie-badge {
+    margin-top: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-warning);
+    background: rgba(245, 158, 11, 0.1);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    padding: 0.2rem 0.6rem;
+    border-radius: 9999px;
+}
+
+/* Exercise Meta Info */
+.gym-exercise-meta {
+    border-top: 1px solid rgba(255,255,255,0.05);
+    padding-top: 1rem;
+}
+
+.gym-exercise-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.gym-exercise-header h3 {
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.gym-diff-badge {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    padding: 0.25rem 0.6rem;
+    border-radius: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    background: rgba(52, 211, 153, 0.15);
+    color: var(--text-success);
+    border: 1px solid rgba(52, 211, 153, 0.3);
+}
+
+.gym-diff-badge.medio {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--text-warning);
+    border-color: rgba(245,158,11,0.3);
+}
+
+.gym-diff-badge.avanzado {
+    background: rgba(239, 68, 68, 0.15);
+    color: var(--text-danger);
+    border-color: rgba(239,68,68,0.3);
+}
+
+.gym-muscle-tags {
+    display: flex;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    margin-top: 0.25rem;
+}
+
+.muscle-tag {
+    font-size: 0.65rem;
+    font-weight: 600;
+    color: var(--primary-light);
+    background: rgba(16,185,129,0.1);
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.gym-exercise-desc {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.45;
+    margin-bottom: 0.85rem;
+}
+
+/* Steps Box */
+.gym-steps-box {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 0.85rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.gym-steps-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-warning);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+
+.gym-steps-list {
+    padding-left: 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.gym-steps-list li {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.35;
+}
+
+.timer-controls { display: flex; gap: 1rem; margin-top: 0.5rem; }
+
+/* Category Filter Chips */
+.gym-category-filter {
+    display: flex;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding-bottom: 0.35rem;
+    margin-top: 0.75rem;
+    scrollbar-width: none;
+}
+
+.gym-category-filter::-webkit-scrollbar { display: none; }
+
+.cat-chip {
+    background: rgba(255,255,255,0.03);
+    border: 1.5px solid var(--border-color);
+    border-radius: 9999px;
+    padding: 0.4rem 0.9rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    cursor: pointer;
+    white-space: nowrap;
+    transition: var(--transition-smooth);
+}
+
+.cat-chip:hover {
+    border-color: var(--primary-light);
+    color: var(--primary-light);
+}
+
+.cat-chip.active {
+    background: rgba(16,185,129,0.12);
+    border-color: var(--primary-light);
+    color: var(--primary-light);
+}
+
+/* Exercise Cards Grid */
+.gym-exercise-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 0.75rem;
+}
+
+@media (max-width: 400px) {
+    .gym-exercise-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.gym-ex-card {
+    background: var(--bg-card);
+    border: 1.5px solid var(--border-color);
+    border-radius: 16px;
+    padding: 1rem;
+    cursor: pointer;
+    transition: var(--transition-smooth);
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.gym-ex-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.gym-ex-card:hover {
+    transform: translateY(-3px);
+    border-color: var(--primary-light);
+    background: var(--bg-card-hover);
+}
+
+.gym-ex-card:hover::before { opacity: 1; }
+
+.gym-ex-card.selected {
+    border-color: var(--primary-light);
+    background: rgba(16,185,129,0.07);
+}
+
+.gym-ex-card.selected::before { opacity: 1; }
+
+.gym-ex-icon {
+    font-size: 1.75rem;
+    text-align: center;
+    display: block;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
+}
+
+.gym-ex-name {
+    font-size: 0.82rem;
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--text-primary);
+}
+
+.gym-ex-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.gym-ex-time {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-weight: 600;
+}
+
+.gym-ex-kcal {
+    font-size: 0.68rem;
+    color: var(--text-warning);
+    font-weight: 700;
+    background: rgba(245,158,11,0.1);
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+}
+
+.gym-ex-diff {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-success);
+}
+
+/* Weekly Plan Card */
+.weekly-plan-card { padding: 1rem; }
+
+.weekly-plan-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 0.5rem;
+}
+
+.week-day-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.week-day-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.week-day-pill {
+    width: 100%;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 0.6rem 0.25rem;
+    text-align: center;
+    transition: var(--transition-smooth);
+}
+
+.week-day-pill.done {
+    background: rgba(16,185,129,0.1);
+    border-color: var(--primary-light);
+}
+
+.week-day-pill.today {
+    background: rgba(245,158,11,0.1);
+    border-color: var(--accent-light);
+}
+
+.week-day-pill-icon { font-size: 1.1rem; display: block; }
+.week-day-pill-name { font-size: 0.6rem; color: var(--text-muted); margin-top: 0.2rem; display: block; line-height: 1.2; }
 
 /* ==========================================
    RECIPES / DETAILS MODAL

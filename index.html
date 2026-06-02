@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -321,38 +321,89 @@
                 </div>
             </section>
 
-            <!-- TAB 4: MICRO-HÁBITOS -->
+            <!-- TAB 4: GYM & MICRO-HABITOS -->
             <section id="tab-habits" class="tab-panel">
                 <div class="section-intro">
-                    <h2 data-i18n="habits_intro_title">Micro-Entrenamientos de 5 Minutos</h2>
-                    <p data-i18n="habits_intro_desc">¿Sin tiempo para el gimnasio? Estos micro-estímulos activan la sensibilidad a la insulina y ayudan a depurar grasa visceral.</p>
+                    <h2 data-i18n="habits_intro_title">Ejercicios para tu H&iacute;gado</h2>
+                    <p data-i18n="habits_intro_desc">Rutinas dise&ntilde;adas para activar la depuraci&oacute;n hep&aacute;tica, quemar glucosa y reducir grasa visceral.</p>
                 </div>
 
-                <!-- Interactive Timer Card -->
-                <div class="card premium-card timer-card">
-                    <div class="timer-display">
-                        <span id="timer-minutes">05</span>:<span id="timer-seconds">00</span>
+                <!-- Active Exercise Timer Card -->
+                <div class="card premium-card gym-active-card" id="gym-active-card">
+                    <div class="gym-exercise-display">
+                        <div class="exercise-anim-box" id="exercise-anim-box">
+                            <span class="exercise-anim-icon" id="exercise-anim-icon">&#x1F9B5;</span>
+                        </div>
+                        <div class="gym-timer-block">
+                            <div class="timer-display">
+                                <span id="timer-minutes">05</span>:<span id="timer-seconds">00</span>
+                            </div>
+                            <div class="gym-calorie-badge" id="gym-calorie-badge">~15 kcal</div>
+                        </div>
                     </div>
-                    <div class="timer-details">
-                        <h3 id="current-habit-title">Calf Raises (Elevación de talones)</h3>
-                        <p id="current-habit-desc">Perfecto para hacer de pie en el escritorio. Activa el músculo sóleo que consume glucosa de forma eficiente.</p>
+
+                    <div class="gym-exercise-meta">
+                        <div class="gym-exercise-header">
+                            <div>
+                                <h3 id="current-habit-title">Elevaci&oacute;n de Talones (S&oacute;leo)</h3>
+                                <div class="gym-muscle-tags" id="gym-muscle-tags">
+                                    <span class="muscle-tag">Piernas</span>
+                                    <span class="muscle-tag">Glucosa</span>
+                                </div>
+                            </div>
+                            <div class="gym-diff-badge" id="gym-diff-badge">F&aacute;cil</div>
+                        </div>
+                        <p id="current-habit-desc" class="gym-exercise-desc">Activa el m&uacute;sculo s&oacute;leo que consume glucosa de forma muy eficiente, ideal en el escritorio.</p>
+
+                        <div class="gym-steps-box">
+                            <h4 class="gym-steps-title">&#x1F4CB; C&oacute;mo hacerlo:</h4>
+                            <ol class="gym-steps-list" id="gym-steps-list">
+                                <li>P&aacute;rate derecho, pies al ancho de tus hombros</li>
+                                <li>Levanta los talones lentamente hasta quedar en puntas</li>
+                                <li>Aguanta 1 segundo arriba, baja despacio</li>
+                                <li>Repite durante 5 minutos sin parar</li>
+                            </ol>
+                        </div>
                     </div>
+
                     <div class="timer-controls">
                         <button class="btn-secondary" id="btn-timer-reset" onclick="resetTimer()" data-i18n="habits_timer_reset">Reiniciar</button>
-                        <button class="btn-primary" id="btn-timer-toggle" onclick="toggleTimer()" data-i18n="habits_timer_start">Iniciar</button>
+                        <button class="btn-primary" id="btn-timer-toggle" onclick="toggleTimer()" data-i18n="habits_timer_start">&#x25B6; Iniciar</button>
                     </div>
                 </div>
 
-                <!-- List of Habits -->
-                <div class="section-title">
-                    <h3 data-i18n="habits_list_title">Selecciona tu Rutina de hoy</h3>
+                <!-- Category Filter -->
+                <div class="section-title" style="margin-top:1.5rem;">
+                    <h3 data-i18n="habits_list_title">Elige tu Ejercicio</h3>
                 </div>
-                <div class="habits-list" id="habits-selector-list">
+                <div class="gym-category-filter" id="gym-category-filter">
+                    <button class="cat-chip active" onclick="filterHabits('all')" data-cat="all">&#x1F3C3; Todo</button>
+                    <button class="cat-chip" onclick="filterHabits('legs')" data-cat="legs">&#x1F9B5; Piernas</button>
+                    <button class="cat-chip" onclick="filterHabits('core')" data-cat="core">&#x1F4AA; Abdomen</button>
+                    <button class="cat-chip" onclick="filterHabits('arms')" data-cat="arms">&#x1F9BE; Brazos</button>
+                    <button class="cat-chip" onclick="filterHabits('breath')" data-cat="breath">&#x1FAC1; Respiraci&oacute;n</button>
+                    <button class="cat-chip" onclick="filterHabits('stretch')" data-cat="stretch">&#x1F9D8; Estiramiento</button>
+                </div>
+
+                <!-- Exercise Cards Grid -->
+                <div class="gym-exercise-grid" id="habits-selector-list">
                     <!-- Injected by JS -->
                 </div>
+
+                <!-- Weekly Plan -->
+                <div class="section-title" style="margin-top: 1.5rem;">
+                    <h3>&#x1F4C5; <span data-i18n="weekly_plan_title">Plan Semanal Hep&aacute;tico</span></h3>
+                </div>
+                <div class="weekly-plan-card card">
+                    <div class="weekly-plan-grid" id="weekly-plan-grid">
+                        <!-- Injected by JS -->
+                    </div>
+                </div>
+
             </section>
 
-            <!-- TAB 5: RESOURCES (MULTIMEDIA & LIBRARY) -->
+
+                        <!-- TAB 5: RESOURCES (MULTIMEDIA & LIBRARY) -->
             <section id="tab-resources" class="tab-panel">
                 <div class="section-intro">
                     <h2 data-i18n="resources_intro_title">Biblioteca & Multimedia</h2>
