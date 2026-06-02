@@ -123,6 +123,16 @@
                     </div>
                 </div>
 
+                <!-- HepaCoach Alerts Control Card -->
+                <div class="coach-card">
+                    <div class="coach-avatar">🤖</div>
+                    <div class="coach-info">
+                        <h4 data-i18n="coach_title">HepaCoach AI (Alertas Estrictas)</h4>
+                        <p id="coach-status-desc" data-i18n="coach_desc">Recibe avisos para tomar agua y moverte en el trabajo de forma estricta. ¡Haz clic para activar notificaciones del sistema!</p>
+                        <button class="btn-coach-action" onclick="requestNotificationPermission()" id="btn-enable-notifications" data-i18n="btn_enable_notifications">🔔 Activar Alertas Clínicas</button>
+                    </div>
+                </div>
+
                 <!-- Weekly Bar Chart -->
                 <div class="card chart-card">
                     <h3 data-i18n="chart_title">Progreso Semanal (Score)</h3>
@@ -517,6 +527,9 @@
             </div>
         </div>
     </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toast-container" class="toast-container"></div>
 
     <!-- Scripts -->
     <script src="app.js"></script>

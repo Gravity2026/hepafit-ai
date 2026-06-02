@@ -22,7 +22,11 @@ const userState = {
     activeHabitIndex: 0,
     timerInterval: null,
     timerSecondsLeft: 300,
-    timerRunning: false
+    timerRunning: false,
+
+    // Alert timestamps
+    lastWaterTime: Date.now(),
+    lastHabitTime: Date.now()
 };
 
 // --- MULTI-LANGUAGE DICTIONARY (i18n) ---
@@ -112,6 +116,10 @@ const i18n = {
         demo_access_label: "Acceso Demo: Usuario: <strong>demo</strong> | Clave: <strong>123456</strong>",
         status_stable: "Hígado Estable",
         water_metric_title: "Agua",
+        coach_title: "HepaCoach AI (Alertas Estrictas)",
+        coach_desc: "Recibe avisos para tomar agua y moverte en el escritorio de forma estricta. ¡Haz clic para activar notificaciones!",
+        btn_enable_notifications: "🔔 Activar Alertas Clínicas",
+        btn_notifications_active: "✅ Alertas Activas",
         habits_metric_title: "Micro-hábitos",
         vid_title_1: "5 Mins de Estiramiento de Oficina",
         vid_desc_1: "Rutina guiada de baja intensidad ideal para relajar cuello, espalda y hombros durante el trabajo.",
@@ -211,6 +219,10 @@ const i18n = {
         demo_access_label: "Demo Access: Username: <strong>demo</strong> | Password: <strong>123456</strong>",
         status_stable: "Stable Liver",
         water_metric_title: "Water",
+        coach_title: "HepaCoach AI (Strict Alerts)",
+        coach_desc: "Receive push reminders to drink water and move at your desk. Click to enable desktop notifications!",
+        btn_enable_notifications: "🔔 Enable Clinical Alerts",
+        btn_notifications_active: "✅ Alerts Active",
         habits_metric_title: "Micro-habits",
         vid_title_1: "5 Mins Desk Stretching",
         vid_desc_1: "Guided low-intensity routine ideal to relax neck, back and shoulders during work.",
@@ -580,6 +592,7 @@ function renderWeeklyChart() {
 function addWater() {
     if (userState.water < 3.0) {
         userState.water += 0.25;
+        userState.lastWaterTime = Date.now();
         if (userState.healthScore < 100) userState.healthScore = Math.min(100, userState.healthScore + 2);
         updateDashboardUI();
         renderWeeklyChart();
@@ -841,6 +854,7 @@ function toggleTimer() {
                 
                 userState.healthScore = Math.min(100, userState.healthScore + activeHabit.points);
                 userState.completedHabitsCount++;
+                userState.lastHabitTime = Date.now();
                 updateDashboardUI();
                 renderWeeklyChart();
                 resetTimer();
@@ -1123,3 +1137,116 @@ function initDocDropzone() {
         }
     }, false);
 }
+
+// ==========================================
+// HEPA-COACH STRICT ALERT & NOTIFICATION SYSTEM
+// ==========================================
+let notificationPermissionGranted = false;
+
+function requestNotificationPermission() {
+    if (!("Notification" in window)) {
+        showToast("HepaCoach AI", userState.lang === 'es' ? "Tu navegador no soporta notificaciones de escritorio." : "Desktop notifications are not supported by your browser.", "warning");
+        return;
+    }
+
+    Notification.requestPermission().then(permission => {
+        const btn = document.getElementById("btn-enable-notifications");
+        const desc = document.getElementById("coach-status-desc");
+        const dict = i18n[userState.lang];
+
+        if (permission === "granted") {
+            notificationPermissionGranted = true;
+            showToast("HepaCoach AI", userState.lang === 'es' ? "¡Alertas del sistema activadas! Te mantendré estricto." : "System alerts enabled! I will keep you disciplined.", "info");
+            if (btn) btn.textContent = dict.btn_notifications_active || "✅ Alertas Activas";
+            if (desc) desc.textContent = userState.lang === 'es' ? "Notificaciones nativas activadas correctamente. El asesor te alertará periódicamente." : "Native alerts enabled. The coach will alert you periodically.";
+        } else {
+            showToast("HepaCoach AI", userState.lang === 'es' ? "Permiso denegado. Se usarán avisos internos." : "Permission denied. Internal alerts will be used.", "warning");
+        }
+    });
+}
+
+function showToast(title, message, type = "info") {
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+
+    const toast = document.createElement("div");
+    toast.className = `toast-alert ${type}`;
+    
+    let icon = "💡";
+    if (type === "warning") icon = "⚠️";
+    if (type === "danger") icon = "🚨";
+    if (title.includes("Coach") || title.includes("Robot")) icon = "🤖";
+    if (title.includes("Agua") || title.includes("Water")) icon = "💧";
+    if (title.includes("Pausa") || title.includes("Break")) icon = "⏱️";
+
+    toast.innerHTML = `
+        <div class="toast-icon">${icon}</div>
+        <div class="toast-content">
+            <h4>${title}</h4>
+            <p>${message}</p>
+        </div>
+        <button class="toast-close" onclick="this.parentElement.remove()">&times;</button>
+    `;
+
+    container.appendChild(toast);
+
+    // Auto dismiss after 6 seconds
+    setTimeout(() => {
+        toast.classList.add("hide");
+        setTimeout(() => toast.remove(), 300);
+    }, 6000);
+}
+
+function sendSystemNotification(title, message) {
+    if (notificationPermissionGranted) {
+        new Notification(title, {
+            body: message,
+            icon: "logo.png"
+        });
+    }
+}
+
+// Strict Alert Engine Check (Runs every 40 seconds)
+function runCoachAlertCheck() {
+    if (!userState.user) return;
+
+    const now = Date.now();
+    const timeSinceWater = now - userState.lastWaterTime;
+    const timeSinceHabit = now - userState.lastHabitTime;
+
+    // Simulation threshold: 45 seconds of inactivity triggers a strict reminder
+    const threshold = 45000; 
+
+    if (timeSinceWater > threshold) {
+        userState.lastWaterTime = now;
+        
+        const title = userState.lang === 'es' ? "💧 ¡HepaCoach: Alerta de Hidratación!" : "💧 HepaCoach: Hydration Alert!";
+        const msg = userState.lang === 'es' 
+            ? "¡Han pasado más de 2 horas desde tu último registro! Bebe 250ml de agua para purificar tu hígado." 
+            : "More than 2 hours since your last drink! Have 250ml of water to cleanse your liver.";
+        
+        showToast(title, msg, "warning");
+        sendSystemNotification(title, msg);
+        
+        userState.healthScore = Math.max(30, userState.healthScore - 2);
+        updateDashboardUI();
+        renderWeeklyChart();
+    } else if (timeSinceHabit > threshold) {
+        userState.lastHabitTime = now;
+        
+        const title = userState.lang === 'es' ? "⏱️ ¡HepaCoach: Alerta de Movimiento!" : "⏱️ HepaCoach: Active Break Alert!";
+        const msg = userState.lang === 'es' 
+            ? "Llevas demasiado tiempo sentado. Haz 5 mins de elevación de talones (sóleo) para limpiar tu glucosa." 
+            : "You've been sitting too long. Do 5 mins of calf raises to clear your blood glucose.";
+        
+        showToast(title, msg, "danger");
+        sendSystemNotification(title, msg);
+        
+        userState.healthScore = Math.max(30, userState.healthScore - 3);
+        updateDashboardUI();
+        renderWeeklyChart();
+    }
+}
+
+// Start Scheduler
+setInterval(runCoachAlertCheck, 40000);
