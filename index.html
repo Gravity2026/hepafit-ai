@@ -18,7 +18,7 @@
         <div class="auth-container card">
             <div class="auth-header">
                 <div class="auth-logo">
-                    <img src="logo.png" alt="HepaFit AI Logo" style="width: 60px; height: 60px; border-radius: 12px; object-fit: cover;">
+                    <img src="assets/3d_shield_logo.png" alt="HepaFit AI Logo" style="width: 60px; height: 60px; border-radius: 12px; object-fit: cover;">
                 </div>
                 <h2>HepaFit AI</h2>
                 <p id="auth-subtitle" data-i18n="auth_subtitle">Ingresa tus datos de cuenta para continuar.</p>
@@ -64,7 +64,7 @@
         <header class="app-header">
             <div class="header-brand">
                 <div class="brand-logo">
-                    <img src="logo.png" alt="HepaFit AI Logo" style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover;">
+                    <img src="assets/3d_shield_logo.png" alt="HepaFit AI Logo" style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover;">
                 </div>
                 <div class="brand-text">
                     <h1>HepaFit AI</h1>
@@ -88,9 +88,12 @@
         <main class="app-content">
             <!-- TAB 1: DASHBOARD -->
             <section id="tab-dashboard" class="tab-panel active">
-                <div class="welcome-banner">
-                    <h2><span data-i18n="welcome_prefix">Bienvenido, </span><span id="welcome-name">Usuario</span></h2>
-                    <p data-i18n="welcome_subtitle">Monitorea tu salud hepática y optimiza tu digestión.</p>
+                <div class="welcome-banner" style="display: flex; justify-content: space-between; align-items: center; gap: 1rem;">
+                    <div>
+                        <h2><span data-i18n="welcome_prefix">Bienvenido, </span><span id="welcome-name">Usuario</span></h2>
+                        <p data-i18n="welcome_subtitle">Monitorea tu salud hepática y optimiza tu digestión.</p>
+                    </div>
+                    <img src="assets/3d_shield_logo.png" alt="HepaFit Logo" style="width: 64px; height: 64px; object-fit: contain; flex-shrink: 0;">
                 </div>
 
                 <!-- Radial Progress Card -->
@@ -164,14 +167,18 @@
                 </div>
                 <div class="grid-actions">
                     <button class="action-btn" onclick="addWater()">
-                        <div class="action-icon water-icon">💧</div>
+                        <div class="action-icon water-icon" style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.15); display: flex; align-items: center; justify-content: center;">
+                            <img src="assets/3d_water_glass.png" alt="Agua" style="width: 28px; height: 28px; object-fit: contain;">
+                        </div>
                         <div class="action-label">
                             <h4 data-i18n="action_water">+250ml Agua</h4>
                             <p data-i18n="action_water_sub">Hidratación clave</p>
                         </div>
                     </button>
                     <button class="action-btn" onclick="switchTab('habits')">
-                        <div class="action-icon timer-icon">⏱️</div>
+                        <div class="action-icon timer-icon" style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.15); display: flex; align-items: center; justify-content: center;">
+                            <img src="assets/3d_running_shoe.png" alt="Hábito" style="width: 28px; height: 28px; object-fit: contain;">
+                        </div>
                         <div class="action-label">
                             <h4 data-i18n="action_habit">Micro-Hábito</h4>
                             <p data-i18n="action_habit_sub">Pausa de 5 mins</p>
@@ -309,9 +316,12 @@
 
                 <!-- Nutrition Metrics Widget -->
                 <div class="card premium-card food-metrics-card">
-                    <div class="food-metrics-header">
-                        <h3 data-i18n="food_metrics_title">Métricas de Hoy</h3>
-                        <div class="food-points-badge" id="food-points-badge">+0 HepaPts</div>
+                    <div class="food-metrics-header" style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <h3 data-i18n="food_metrics_title">Métricas de Hoy</h3>
+                            <div class="food-points-badge" id="food-points-badge" style="margin-top: 0.25rem; display: inline-block;">+0 HepaPts</div>
+                        </div>
+                        <img src="assets/3d_green_apple.png" alt="Manzana 3D" style="width: 48px; height: 48px; object-fit: contain; flex-shrink: 0;">
                     </div>
                     <div class="food-kcal-progress">
                         <div class="food-kcal-text">
@@ -322,32 +332,47 @@
                             <div class="food-progress-fill kcal" id="progress-kcal-fill" style="width: 0%;"></div>
                         </div>
                     </div>
-                    <div class="food-macros-progress">
-                        <div class="macro-progress-item">
-                            <div class="macro-label">
+                    <div class="food-macros-progress-rings">
+                        <!-- Protein Ring -->
+                        <div class="macro-ring-container">
+                            <div class="macro-ring-svg-wrapper">
+                                <svg class="macro-ring-svg" viewBox="0 0 36 36">
+                                    <circle class="macro-ring-bg" cx="18" cy="18" r="15.915"></circle>
+                                    <circle class="macro-ring-fg protein" cx="18" cy="18" r="15.915" id="ring-protein-fill"></circle>
+                                </svg>
+                                <span class="macro-ring-icon">🔵</span>
+                            </div>
+                            <div class="macro-ring-text">
                                 <span data-i18n="food_metrics_protein">Proteínas</span>
                                 <strong id="logged-protein">0 / 80g</strong>
                             </div>
-                            <div class="food-progress-bar mini">
-                                <div class="food-progress-fill protein" id="progress-protein-fill" style="width: 0%;"></div>
-                            </div>
                         </div>
-                        <div class="macro-progress-item">
-                            <div class="macro-label">
+                        <!-- Carbs Ring -->
+                        <div class="macro-ring-container">
+                            <div class="macro-ring-svg-wrapper">
+                                <svg class="macro-ring-svg" viewBox="0 0 36 36">
+                                    <circle class="macro-ring-bg" cx="18" cy="18" r="15.915"></circle>
+                                    <circle class="macro-ring-fg carbs" cx="18" cy="18" r="15.915" id="ring-carbs-fill"></circle>
+                                </svg>
+                                <span class="macro-ring-icon">🔴</span>
+                            </div>
+                            <div class="macro-ring-text">
                                 <span data-i18n="food_metrics_carbs">Carbohidratos</span>
                                 <strong id="logged-carbs">0 / 220g</strong>
                             </div>
-                            <div class="food-progress-bar mini">
-                                <div class="food-progress-fill carbs" id="progress-carbs-fill" style="width: 0%;"></div>
-                            </div>
                         </div>
-                        <div class="macro-progress-item">
-                            <div class="macro-label">
+                        <!-- Fats Ring -->
+                        <div class="macro-ring-container">
+                            <div class="macro-ring-svg-wrapper">
+                                <svg class="macro-ring-svg" viewBox="0 0 36 36">
+                                    <circle class="macro-ring-bg" cx="18" cy="18" r="15.915"></circle>
+                                    <circle class="macro-ring-fg fat" cx="18" cy="18" r="15.915" id="ring-fat-fill"></circle>
+                                </svg>
+                                <span class="macro-ring-icon">🟡</span>
+                            </div>
+                            <div class="macro-ring-text">
                                 <span data-i18n="food_metrics_fat">Grasas</span>
                                 <strong id="logged-fat">0 / 65g</strong>
-                            </div>
-                            <div class="food-progress-bar mini">
-                                <div class="food-progress-fill fat" id="progress-fat-fill" style="width: 0%;"></div>
                             </div>
                         </div>
                     </div>
@@ -421,6 +446,10 @@
 
                 <!-- Active Exercise Timer Card -->
                 <div class="card premium-card gym-active-card" id="gym-active-card">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.25rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.75rem;">
+                        <span style="font-size: 0.75rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.5rem;">Entrenamiento Activo</span>
+                        <img src="assets/3d_running_shoe.png" alt="Zapatilla 3D" style="width: 40px; height: 40px; object-fit: contain; flex-shrink: 0;">
+                    </div>
                     <div class="gym-exercise-display">
                         <div class="exercise-anim-box" id="exercise-anim-box">
                             <span class="exercise-anim-icon" id="exercise-anim-icon">&#x1F9B5;</span>
@@ -582,23 +611,33 @@
         <!-- Bottom Navigation Bar -->
         <nav class="app-nav">
             <button class="nav-item active" id="nav-dashboard" onclick="switchTab('dashboard')">
-                <span class="nav-icon">📊</span>
+                <span class="nav-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="feather feather-activity"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+                </span>
                 <span class="nav-label" data-i18n="tab_dashboard">Dashboard</span>
             </button>
             <button class="nav-item" id="nav-test" onclick="switchTab('test')">
-                <span class="nav-icon">📋</span>
+                <span class="nav-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="feather feather-file-text"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                </span>
                 <span class="nav-label" data-i18n="tab_test">Test Hepático</span>
             </button>
             <button class="nav-item" id="nav-food" onclick="switchTab('food')">
-                <span class="nav-icon">🥗</span>
+                <span class="nav-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="feather feather-pie-chart"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"></path><path d="M22 12A10 10 0 0 0 12 2v10z"></path></svg>
+                </span>
                 <span class="nav-label" data-i18n="tab_food">Alimentación</span>
             </button>
             <button class="nav-item" id="nav-habits" onclick="switchTab('habits')">
-                <span class="nav-icon">⏱️</span>
+                <span class="nav-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="feather feather-heart"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+                </span>
                 <span class="nav-label" data-i18n="tab_habits">Hábitos</span>
             </button>
             <button class="nav-item" id="nav-resources" onclick="switchTab('resources')">
-                <span class="nav-icon">📚</span>
+                <span class="nav-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round" class="feather feather-book-open"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>
+                </span>
                 <span class="nav-label" data-i18n="tab_resources">Recursos</span>
             </button>
         </nav>
@@ -649,7 +688,7 @@
                 <h2 id="onb-title" style="font-size: 1.4rem; font-weight: 800; margin-top: 0.5rem; color: var(--text-primary);" data-i18n="onb_title">¡Te damos la bienvenida!</h2>
                 <p id="onb-subtitle" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;" data-i18n="onb_subtitle">Descubre cómo HepaFit AI te ayuda a cuidar tu salud en 3 pasos simples.</p>
             </div>
-            <div class="onboarding-body" style="text-align: left; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+            <div class="onboarding-body" style="text-align: left; background: #f8fafc; padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
                 <div class="onboarding-step" id="onb-step-1">
                     <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--primary-light); margin-bottom: 0.25rem;" data-i18n="onb_step1_title">1. Haz tu Test Inicial</h3>
                     <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;" data-i18n="onb_step1_desc">Ve a la pestaña Test Hepático. Responde 5 preguntas de tu rutina diaria para estimar tu nivel de riesgo y obtener recomendaciones.</p>

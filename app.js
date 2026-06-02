@@ -26,7 +26,13 @@ const userState = {
 
     // Alert timestamps
     lastWaterTime: Date.now(),
-    lastHabitTime: Date.now()
+    lastHabitTime: Date.now(),
+
+    // Persistent user metrics
+    dailyFoodLog: [],
+    weeklyNutritionCompleted: [false, false, false, false, false, false, false],
+    alertsLog: [],
+    simulationMode: false
 };
 
 // --- MULTI-LANGUAGE DICTIONARY (i18n) ---
@@ -344,6 +350,38 @@ function checkSession() {
         document.getElementById("user-display-name").textContent = userState.user.name;
         document.getElementById("welcome-name").textContent = userState.user.name;
         
+        // Load user specific state from localStorage
+        const prefix = userState.user.username;
+        userState.water = parseFloat(localStorage.getItem("hepaWater_" + prefix) || "0.8");
+        userState.healthScore = parseInt(localStorage.getItem("hepaHealthScore_" + prefix) || "70");
+        userState.completedHabitsCount = parseInt(localStorage.getItem("hepaCompletedHabitsCount_" + prefix) || "1");
+        userState.dailyFoodLog = JSON.parse(localStorage.getItem("hepaFoodLog_" + prefix) || "[]");
+        userState.weeklyNutritionCompleted = JSON.parse(localStorage.getItem("hepaWeeklyNutrition_" + prefix) || "[false,false,false,false,false,false,false]");
+        userState.alertsLog = JSON.parse(localStorage.getItem("hepaAlertsLog_" + prefix) || "[]");
+        userState.simulationMode = localStorage.getItem("hepaSimMode_" + prefix) === "true";
+
+        // Load weekly scores if stored, else defaults
+        const storedWeekly = localStorage.getItem("hepaWeeklyScores_" + prefix);
+        if (storedWeekly) {
+            userState.weeklyScores = JSON.parse(storedWeekly);
+        }
+
+        // Sync simulation mode switch on UI if present
+        const simCheckbox = document.getElementById("sim-mode-checkbox");
+        if (simCheckbox) {
+            simCheckbox.checked = userState.simulationMode;
+        }
+
+        // Sync browser notification state
+        if ("Notification" in window && Notification.permission === "granted") {
+            notificationPermissionGranted = true;
+            const btn = document.getElementById("btn-enable-notifications");
+            const desc = document.getElementById("coach-status-desc");
+            const dict = i18n[userState.lang] || i18n["es"];
+            if (btn) btn.textContent = (dict && dict.btn_notifications_active) || "✅ Alertas Activas";
+            if (desc) desc.textContent = userState.lang === 'es' ? "Notificaciones nativas activadas correctamente. El asesor te alertará periódicamente." : "Native alerts enabled. The coach will alert you periodically.";
+        }
+
         // Load default language from localStorage
         const savedLang = localStorage.getItem("hepaLang") || "es";
         changeLanguage(savedLang);
@@ -354,9 +392,9 @@ function checkSession() {
         // Start Coach Alert scheduler only once
         if (!userState._alertSchedulerStarted) {
             userState._alertSchedulerStarted = true;
-            userState.lastWaterTime = Date.now();
-            userState.lastHabitTime = Date.now();
-            setInterval(runCoachAlertCheck, 40000);
+            userState.lastWaterTime = parseFloat(localStorage.getItem("hepaLastWaterTime_" + prefix) || Date.now());
+            userState.lastHabitTime = parseFloat(localStorage.getItem("hepaLastHabitTime_" + prefix) || Date.now());
+            startCoachScheduler();
         }
 
         // Check Onboarding Modal
@@ -367,8 +405,9 @@ function checkSession() {
         document.getElementById("auth-screen").classList.remove("d-none");
         document.getElementById("main-app").classList.add("d-none");
         
-        document.getElementById("login-username").value = "demo";
-        document.getElementById("login-password").value = "123456";
+        // Form inputs start empty to remove prefilled developer credentials
+        document.getElementById("login-username").value = "";
+        document.getElementById("login-password").value = "";
     }
 }
 
@@ -405,6 +444,10 @@ function changeLanguage(lang) {
     renderHabitsSelector();
     loadQuizQuestion();
     nextTip();
+    updateFoodMetricsUI();
+    renderFoodLog();
+    renderWeeklyNutritionPlan();
+    renderAlertTimeline();
 }
 
 function toggleAuthForms(showLogin) {
@@ -587,6 +630,10 @@ function renderWeeklyChart() {
     const currentDayIdx = 2; // Simulated Wednesday
     
     userState.weeklyScores[currentDayIdx] = userState.healthScore;
+    
+    if (userState.user) {
+        localStorage.setItem("hepaWeeklyScores_" + userState.user.username, JSON.stringify(userState.weeklyScores));
+    }
     
     chartContainer.innerHTML = days.map((day, idx) => {
         const score = userState.weeklyScores[idx];
@@ -1526,7 +1573,7 @@ function sendSystemNotification(title, message) {
     if (notificationPermissionGranted) {
         new Notification(title, {
             body: message,
-            icon: "logo.png"
+            icon: "assets/3d_shield_logo.png"
         });
     }
 }
@@ -1944,14 +1991,24 @@ function updateFoodMetricsUI() {
     if (pointsBadge) pointsBadge.textContent = `+${totalPoints} HepaPts`;
 
     const fillKcal = document.getElementById("progress-kcal-fill");
-    const fillProtein = document.getElementById("progress-protein-fill");
-    const fillCarbs = document.getElementById("progress-carbs-fill");
-    const fillFat = document.getElementById("progress-fat-fill");
+    const fillProteinRing = document.getElementById("ring-protein-fill");
+    const fillCarbsRing = document.getElementById("ring-carbs-fill");
+    const fillFatRing = document.getElementById("ring-fat-fill");
 
     if (fillKcal) fillKcal.style.width = `${Math.min(100, (totalKcal / 2000) * 100)}%`;
-    if (fillProtein) fillProtein.style.width = `${Math.min(100, (totalProtein / 80) * 100)}%`;
-    if (fillCarbs) fillCarbs.style.width = `${Math.min(100, (totalCarbs / 220) * 100)}%`;
-    if (fillFat) fillFat.style.width = `${Math.min(100, (totalFat / 65) * 100)}%`;
+    
+    if (fillProteinRing) {
+        const pct = (totalProtein / 80) * 100;
+        fillProteinRing.style.strokeDashoffset = 100 - Math.min(100, pct);
+    }
+    if (fillCarbsRing) {
+        const pct = (totalCarbs / 220) * 100;
+        fillCarbsRing.style.strokeDashoffset = 100 - Math.min(100, pct);
+    }
+    if (fillFatRing) {
+        const pct = (totalFat / 65) * 100;
+        fillFatRing.style.strokeDashoffset = 100 - Math.min(100, pct);
+    }
 }
 
 function renderFoodLog() {
