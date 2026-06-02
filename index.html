@@ -239,16 +239,15 @@
                 <!-- Doc AI Section Container -->
                 <div id="doc-section-container" class="d-none">
                     <div class="card premium-card doc-uploader-card" style="text-align: center; padding: 2rem 1.5rem; position: relative;">
-                        <!-- Dropzone -->
-                        <div id="doc-dropzone" class="dropzone" onclick="triggerFileInput()" style="border: 2px dashed rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 2.5rem 1rem; cursor: pointer; background: rgba(255,255,255,0.01); transition: var(--transition-smooth); position: relative; overflow: hidden;">
+                        <!-- Dropzone: use native label for file input to bypass browser security restrictions -->
+                        <label for="doc-file-input" id="doc-dropzone" class="dropzone" style="display:block; border: 2px dashed rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 2.5rem 1rem; cursor: pointer; background: rgba(255,255,255,0.01); transition: var(--transition-smooth); position: relative; overflow: hidden;">
                             <span style="font-size: 3rem; display: block; filter: drop-shadow(0 0 10px rgba(16,185,129,0.3));">📄</span>
                             <h3 style="font-size: 1rem; font-weight: 700; margin-top: 1rem;" data-i18n="doc_drop_title">Arrastra tu examen aquí o presiona</h3>
                             <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;" data-i18n="doc_drop_sub">Sube una foto o captura de tu análisis de sangre, ecografía o perfil lipídico.</p>
                             <input type="file" id="doc-file-input" accept="image/*,application/pdf" style="display: none;" onchange="handleFileSelect(this)">
-                            
                             <!-- Laser scanline overlay (hidden by default) -->
                             <div id="laser-scanline" class="laser-scanline d-none"></div>
-                        </div>
+                        </label>
                     </div>
 
                     <!-- Scanning analysis message (hidden by default) -->
@@ -393,7 +392,8 @@
                 <div class="video-grid">
                     <div class="card video-card">
                         <div class="video-wrapper">
-                            <video src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" controls preload="metadata" style="width:100%; height:100%; object-fit:cover;"></video>
+                            <!-- Internet Archive public domain - no CORS restrictions -->
+                            <video src="https://ia800300.us.archive.org/1/items/BigBuckBunny_328/BigBuckBunny_512kb.mp4" controls preload="metadata" style="width:100%; height:100%; object-fit:cover;"></video>
                         </div>
                         <h4 data-i18n="vid_title_1">5 Mins de Estiramiento de Oficina</h4>
                         <p data-i18n="vid_desc_1">Rutina guiada de baja intensidad ideal para relajar cuello, espalda y hombros durante el trabajo.</p>
@@ -401,7 +401,7 @@
 
                     <div class="card video-card">
                         <div class="video-wrapper">
-                            <video src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4" controls preload="metadata" style="width:100%; height:100%; object-fit:cover;"></video>
+                            <video src="https://ia800201.us.archive.org/12/items/ElephantsDream/ed_hd.ogv" controls preload="metadata" style="width:100%; height:100%; object-fit:cover;"></video>
                         </div>
                         <h4 data-i18n="vid_title_2">Activación Sóleo y Cardio Suave</h4>
                         <p data-i18n="vid_desc_2">Micro-movilidad enfocada en quemar glucosa rápidamente y favorecer la depuración del hígado.</p>

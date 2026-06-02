@@ -1,4 +1,4 @@
-// ==========================================
+﻿// ==========================================
 // HEPAFIT AI - APLICACIÓN DE SALUD HEPÁTICA
 // ==========================================
 
@@ -345,7 +345,18 @@ function checkSession() {
         // Load default language from localStorage
         const savedLang = localStorage.getItem("hepaLang") || "es";
         changeLanguage(savedLang);
-        
+
+        // Init audio player after login (DOM is now visible)
+        initAudioPlayer();
+
+        // Start Coach Alert scheduler only once
+        if (!userState._alertSchedulerStarted) {
+            userState._alertSchedulerStarted = true;
+            userState.lastWaterTime = Date.now();
+            userState.lastHabitTime = Date.now();
+            setInterval(runCoachAlertCheck, 40000);
+        }
+
         // Check Onboarding Modal
         if (!localStorage.getItem("hepaOnboarded_" + userState.user.username)) {
             showOnboardingTour();
@@ -877,9 +888,9 @@ function resetTimer() {
 // MUSIC PLAYER LOGIC (ROYALTY FREE AUDIO)
 // ==========================================
 const playlist = [
-    { title: "SoundHelix Song 1 (Energizing)", artist: "SoundHelix • Royalty Free", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", cover: "⚡" },
-    { title: "SoundHelix Song 2 (Cardio Flow)", artist: "SoundHelix • Royalty Free", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", cover: "🔥" },
-    { title: "SoundHelix Song 3 (Focus Beat)", artist: "SoundHelix • Royalty Free", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", cover: "🧘" }
+    { title: "SoundHelix Song 1 (Energizing)", artist: "SoundHelix • Royalty Free", url: "assets/music1.mp3", cover: "⚡" },
+    { title: "SoundHelix Song 2 (Cardio Flow)", artist: "SoundHelix • Royalty Free", url: "assets/music2.mp3", cover: "🔥" },
+    { title: "SoundHelix Song 3 (Focus Beat)", artist: "SoundHelix • Royalty Free", url: "assets/music3.mp3", cover: "🧘" }
 ];
 let currentTrackIndex = 0;
 let isAudioPlaying = false;
@@ -1248,5 +1259,4 @@ function runCoachAlertCheck() {
     }
 }
 
-// Start Scheduler
-setInterval(runCoachAlertCheck, 40000);
+// Scheduler is started in checkSession() after confirmed login
