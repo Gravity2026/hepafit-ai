@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="HepaFit AI - Tu guía profesional para cuidar la salud de tu hígado con micro-hábitos de 5 minutos y alimentación adaptada a tu presupuesto.">
+    <title>HepaFit AI | Cuidado Hepático Profesional</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Main CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Access Control Screen (Login & Register) -->
+    <div id="auth-screen" class="auth-overlay">
+        <div class="auth-container card">
+            <div class="auth-header">
+                <div class="auth-logo">
+                    <img src="logo.png" alt="HepaFit AI Logo" style="width: 60px; height: 60px; border-radius: 12px; object-fit: cover;">
+                </div>
+                <h2>HepaFit AI</h2>
+                <p id="auth-subtitle" data-i18n="auth_subtitle">Ingresa tus datos de cuenta para continuar.</p>
+                <div class="demo-badge" style="margin-top: 0.5rem; font-size: 0.75rem; color: var(--text-warning); background: rgba(245, 158, 11, 0.1); padding: 0.25rem 0.5rem; border-radius: 8px; display: inline-block;">
+                    💡 <span data-i18n="demo_access_label">Acceso Demo: Usuario: <strong>demo</strong> | Clave: <strong>123456</strong></span>
+                </div>
+            </div>
+
+            <!-- Login Form -->
+            <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="login-username" data-i18n="label_username">Usuario</label>
+                    <input type="text" id="login-username" placeholder="Tu usuario" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="login-password" data-i18n="label_password">Contraseña</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn-primary w-full" data-i18n="btn_login">Iniciar Sesión</button>
+                <p class="auth-toggle"><span data-i18n="link_to_register" onclick="toggleAuthForms(false)">¿No tienes cuenta? Regístrate gratis</span></p>
+            </form>
+
+            <!-- Register Form -->
+            <form id="register-form" class="auth-form d-none" onsubmit="handleRegister(event)">
+                <div class="form-group">
+                    <label for="reg-name" data-i18n="label_fullname">Nombre Completo</label>
+                    <input type="text" id="reg-name" placeholder="Tu nombre" required autocomplete="name">
+                </div>
+                <div class="form-group">
+                    <label for="reg-username" data-i18n="label_username">Usuario</label>
+                    <input type="text" id="reg-username" placeholder="Elige un usuario" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="reg-password" data-i18n="label_password">Contraseña</label>
+                    <input type="password" id="reg-password" placeholder="Crea tu contraseña" required autocomplete="new-password">
+                </div>
+                <button type="submit" class="btn-primary w-full" data-i18n="btn_register">Crear Cuenta</button>
+                <p class="auth-toggle"><span data-i18n="link_to_login" onclick="toggleAuthForms(true)">¿Ya tienes cuenta? Inicia sesión</span></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application Shell -->
+    <div class="app-container d-none" id="main-app">
+        <!-- Premium Header -->
+        <header class="app-header">
+            <div class="header-brand">
+                <div class="brand-logo">
+                    <img src="logo.png" alt="HepaFit AI Logo" style="width: 32px; height: 32px; border-radius: 8px; object-fit: cover;">
+                </div>
+                <div class="brand-text">
+                    <h1>HepaFit AI</h1>
+                    <span id="user-display-name">Usuario</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <select id="lang-select" class="lang-select" onchange="changeLanguage(this.value)" style="background: rgba(255,255,255,0.05); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.25rem 0.5rem; font-size: 0.75rem; font-weight: 700; cursor: pointer; outline: none; margin-right: 0.25rem;">
+                    <option value="es">ES</option>
+                    <option value="en">EN</option>
+                </select>
+                <div class="status-badge" id="global-status-badge">
+                    <span class="pulse-dot"></span>
+                    <span id="global-status-text" data-i18n="status_stable">Hígado Estable</span>
+                </div>
+                <button class="btn-logout" onclick="handleLogout()" title="Cerrar Sesión">🔑</button>
+            </div>
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="app-content">
+            <!-- TAB 1: DASHBOARD -->
+            <section id="tab-dashboard" class="tab-panel active">
+                <div class="welcome-banner">
+                    <h2><span data-i18n="welcome_prefix">Bienvenido, </span><span id="welcome-name">Usuario</span></h2>
+                    <p data-i18n="welcome_subtitle">Monitorea tu salud hepática y optimiza tu digestión.</p>
+                </div>
+
+                <!-- Radial Progress Card -->
+                <div class="card premium-card score-card">
+                    <div class="score-container">
+                        <div class="radial-progress" style="--percent: 75;">
+                            <svg class="radial-svg" viewBox="0 0 100 100">
+                                <circle class="bg" cx="50" cy="50" r="40"></circle>
+                                <circle class="fg" cx="50" cy="50" r="40" id="radial-progress-bar"></circle>
+                            </svg>
+                            <div class="score-value">
+                                <span id="health-score">75</span>
+                                <span class="score-label" data-i18n="score_label">Score Hepático</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="score-info">
+                        <h3><span data-i18n="score_level_label">Tu nivel es: </span><strong class="text-green" id="health-score-grade">Bueno</strong></h3>
+                        <p id="health-score-tip">Sigue así. Tu hígado procesa grasas eficientemente hoy.</p>
+                        <div class="mini-metrics">
+                            <div class="mini-metric">
+                                <span class="metric-title" data-i18n="water_metric_title">Agua</span>
+                                <span class="metric-val" id="water-val">0.8 L</span>
+                            </div>
+                            <div class="mini-metric">
+                                <span class="metric-title" data-i18n="habits_metric_title">Micro-hábitos</span>
+                                <span class="metric-val" id="habits-val">2/4</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Weekly Bar Chart -->
+                <div class="card chart-card">
+                    <h3 data-i18n="chart_title">Progreso Semanal (Score)</h3>
+                    <div class="weekly-bar-chart" id="weekly-chart">
+                        <!-- Bars will load dynamically from JS -->
+                    </div>
+                </div>
+
+                <!-- Quick Actions Grid -->
+                <div class="section-title">
+                    <h3 data-i18n="actions_title">Acciones Rápidas</h3>
+                </div>
+                <div class="grid-actions">
+                    <button class="action-btn" onclick="addWater()">
+                        <div class="action-icon water-icon">💧</div>
+                        <div class="action-label">
+                            <h4 data-i18n="action_water">+250ml Agua</h4>
+                            <p data-i18n="action_water_sub">Hidratación clave</p>
+                        </div>
+                    </button>
+                    <button class="action-btn" onclick="switchTab('habits')">
+                        <div class="action-icon timer-icon">⏱️</div>
+                        <div class="action-label">
+                            <h4 data-i18n="action_habit">Micro-Hábito</h4>
+                            <p data-i18n="action_habit_sub">Pausa de 5 mins</p>
+                        </div>
+                    </button>
+                </div>
+
+                <!-- Daily Tips Carousel -->
+                <div class="section-title" style="margin-top: 1.5rem;">
+                    <h3 data-i18n="tip_title">Consejo del Día</h3>
+                </div>
+                <div class="tip-card" id="daily-tip-container">
+                    <span class="tip-category">💡 Sabías que...</span>
+                    <h4 id="daily-tip-title">El ajo ayuda a activar las enzimas del hígado</h4>
+                    <p id="daily-tip-desc">Contiene selenio y alicina, dos potentes compuestos que ayudan a limpiar el hígado de forma natural.</p>
+                    <button class="btn-text" onclick="nextTip()" data-i18n="next_tip_btn">Siguiente consejo &rarr;</button>
+                </div>
+            </section>
+
+            <section id="tab-test" class="tab-panel">
+                <div class="section-intro">
+                    <h2 data-i18n="test_intro_title">Evaluador de Riesgo Hepático</h2>
+                    <p data-i18n="test_intro_desc">Un cuestionario clínico abreviado basado en estilo de vida, nutrición y factores metabólicos comunes.</p>
+                </div>
+
+                <!-- Test Mode Toggle -->
+                <div class="test-mode-toggle" style="display: flex; background: rgba(255,255,255,0.03); padding: 4px; border-radius: 12px; margin-bottom: 1.25rem; border: 1px solid var(--border-color);">
+                    <button class="toggle-btn active" id="btn-mode-quiz" onclick="switchTestMode('quiz')" style="flex: 1; padding: 0.5rem; border-radius: 8px; border: none; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.25rem; transition: var(--transition-smooth); background: var(--bg-dark); color: var(--text-primary);">
+                        📋 <span data-i18n="toggle_mode_quiz">Cuestionario Diario</span>
+                    </button>
+                    <button class="toggle-btn" id="btn-mode-doc" onclick="switchTestMode('doc')" style="flex: 1; padding: 0.5rem; border-radius: 8px; border: none; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.25rem; transition: var(--transition-smooth); background: none; color: var(--text-muted);">
+                        🧬 <span data-i18n="toggle_mode_doc">Doc AI (Escáner)</span>
+                    </button>
+                </div>
+
+                <!-- Quiz Mode Section Wrapper -->
+                <div id="quiz-section-container">
+                    <div class="card premium-card test-wizard" id="test-wizard">
+                        <!-- Quiz Progress -->
+                        <div class="quiz-progress-bar">
+                            <div class="quiz-progress-fill" id="quiz-progress" style="width: 0%;"></div>
+                        </div>
+                        
+                        <div id="quiz-question-container">
+                            <!-- Questions injected by JS -->
+                        </div>
+
+                        <div class="quiz-navigation">
+                            <button class="btn-secondary" id="quiz-prev-btn" onclick="prevQuestion()" data-i18n="test_prev_btn" disabled>Atrás</button>
+                            <button class="btn-primary" id="quiz-next-btn" onclick="nextQuestion()" data-i18n="test_next_btn">Siguiente</button>
+                        </div>
+                    </div>
+
+                    <div class="card premium-card test-results d-none" id="test-results">
+                        <div class="results-header">
+                            <div class="results-badge" id="results-badge-level">Bajo</div>
+                            <h3 data-i18n="test_results_title">Tu nivel de riesgo estimado</h3>
+                        </div>
+                        <div class="results-chart-container">
+                            <div class="progress-bar-horizontal">
+                                <div class="progress-bar-fill" id="results-bar-fill" style="width: 30%;"></div>
+                            </div>
+                            <div class="chart-labels">
+                                <span>Bajo</span>
+                                <span>Moderado</span>
+                                <span>Alto</span>
+                            </div>
+                        </div>
+                        <div class="results-explanation">
+                            <p id="results-summary">Tu perfil sugiere hábitos saludables con bajo riesgo de acumulación de grasa hepática.</p>
+                            <div class="recommendations-box">
+                                <h4 data-i18n="test_recs_title">Recomendaciones clave para ti:</h4>
+                                <ul id="results-recommendations">
+                                    <!-- Injected by JS -->
+                                </ul>
+                            </div>
+                        </div>
+                        <button class="btn-primary w-full" onclick="resetQuiz()" data-i18n="test_retry_btn">Volver a realizar el test</button>
+                    </div>
+                </div>
+
+                <!-- Doc AI Section Container -->
+                <div id="doc-section-container" class="d-none">
+                    <div class="card premium-card doc-uploader-card" style="text-align: center; padding: 2rem 1.5rem; position: relative;">
+                        <!-- Dropzone -->
+                        <div id="doc-dropzone" class="dropzone" onclick="triggerFileInput()" style="border: 2px dashed rgba(16, 185, 129, 0.3); border-radius: 16px; padding: 2.5rem 1rem; cursor: pointer; background: rgba(255,255,255,0.01); transition: var(--transition-smooth); position: relative; overflow: hidden;">
+                            <span style="font-size: 3rem; display: block; filter: drop-shadow(0 0 10px rgba(16,185,129,0.3));">📄</span>
+                            <h3 style="font-size: 1rem; font-weight: 700; margin-top: 1rem;" data-i18n="doc_drop_title">Arrastra tu examen aquí o presiona</h3>
+                            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;" data-i18n="doc_drop_sub">Sube una foto o captura de tu análisis de sangre, ecografía o perfil lipídico.</p>
+                            <input type="file" id="doc-file-input" accept="image/*,application/pdf" style="display: none;" onchange="handleFileSelect(this)">
+                            
+                            <!-- Laser scanline overlay (hidden by default) -->
+                            <div id="laser-scanline" class="laser-scanline d-none"></div>
+                        </div>
+                    </div>
+
+                    <!-- Scanning analysis message (hidden by default) -->
+                    <div id="doc-scanning-status" class="card d-none" style="text-align: center; padding: 1.5rem;">
+                        <div class="spinner-ring" style="width: 28px; height: 28px; border: 3px solid rgba(16,185,129,0.1); border-top-color: var(--primary-light); border-radius: 50%; display: inline-block; animation: spin 1s linear infinite;"></div>
+                        <h4 style="margin-top: 0.75rem; font-size: 0.95rem; font-weight: 700;" data-i18n="doc_scanning_title">Doc AI Analizando Examen...</h4>
+                        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.15rem;" data-i18n="doc_scanning_desc">Reconociendo términos médicos y comparando rangos clínicos de referencia.</p>
+                    </div>
+
+                    <!-- Doc AI Results Report Card -->
+                    <div id="doc-report-results" class="card premium-card d-none" style="margin-top: 1.25rem;">
+                        <div class="results-header" style="border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.75rem; margin-bottom: 1rem;">
+                            <span class="results-badge bajo" style="background: rgba(16, 185, 129, 0.15); color: var(--text-success);" data-i18n="doc_report_analyzed_badge">Análisis Completo</span>
+                            <h3 data-i18n="doc_report_title">Reporte Clínico Doc AI</h3>
+                        </div>
+                        
+                        <!-- Report Findings -->
+                        <div class="doc-findings" style="margin-bottom: 1.25rem;">
+                            <h4 style="font-size: 0.85rem; color: var(--text-warning); text-transform: uppercase;" data-i18n="doc_report_summary_title">Resumen de Lectura</h4>
+                            <p id="doc-summary-text" style="font-size: 0.85rem; line-height: 1.45; color: var(--text-muted); margin-top: 0.25rem;"></p>
+                        </div>
+
+                        <!-- Technical Terms Glossary Accordion -->
+                        <div class="doc-glossary">
+                            <h4 style="font-size: 0.85rem; color: var(--primary-light); text-transform: uppercase; margin-bottom: 0.75rem;" data-i18n="doc_report_glossary_title">Conceptos Técnicos Explicados</h4>
+                            <div class="glossary-items" id="doc-glossary-list" style="display: flex; flex-direction: column; gap: 0.75rem;">
+                                <!-- Glossaries injected by JS -->
+                            </div>
+                        </div>
+
+                        <button class="btn-primary w-full" onclick="resetDocScanner()" style="margin-top: 1.5rem;" data-i18n="doc_scan_another_btn">Escanear otro examen</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- TAB 3: ALIMENTACIÓN -->
+            <section id="tab-food" class="tab-panel">
+                <div class="section-intro">
+                    <h2 data-i18n="food_intro_title">Guía Nutricional Inteligente</h2>
+                    <p data-i18n="food_intro_desc">Diseñada específicamente para la salud del hígado, adaptada a tu presupuesto.</p>
+                </div>
+
+                <!-- Budget Toggle Switch -->
+                <div class="budget-toggle-container">
+                    <span class="toggle-label" data-i18n="food_toggle_label">Ver opciones para presupuesto:</span>
+                    <div class="budget-toggle">
+                        <button class="toggle-btn active" id="btn-budget-basic" onclick="setBudget('basic')" data-i18n="food_toggle_basic">
+                            <span>🪙</span> Básico / Accesible
+                        </button>
+                        <button class="toggle-btn" id="btn-budget-premium" onclick="setBudget('premium')" data-i18n="food_toggle_premium">
+                            <span>✨</span> Premium / Completo
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Food Cards Grid -->
+                <div class="food-grid" id="food-items-grid">
+                    <!-- Food items injected by JavaScript -->
+                </div>
+
+                <!-- Avoid Food List Section -->
+                <div class="card warning-card" style="margin-top: 2rem;">
+                    <h3 data-i18n="food_avoid_title">🚫 Alimentos a Evitar (Enemigos del Hígado)</h3>
+                    <p data-i18n="food_avoid_desc">Cualquiera que sea tu presupuesto, reducir estos elementos marcará una diferencia radical:</p>
+                    <ul class="avoid-list">
+                        <li><strong>Jarabe de Maíz de Alta Fructosa (JMAF):</strong> Presente en gaseosas y ultraprocesados. Se convierte directamente en grasa hepática.</li>
+                        <li><strong>Aceites vegetales refinados calentados a altas temperaturas:</strong> Generan inflamación.</li>
+                        <li><strong>Alcohol en exceso:</strong> Sobrecarga la desintoxicación celular.</li>
+                        <li><strong>Harinas refinadas y panificados industriales:</strong> Elevan la insulina rápidamente.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <!-- TAB 4: MICRO-HÁBITOS -->
+            <section id="tab-habits" class="tab-panel">
+                <div class="section-intro">
+                    <h2 data-i18n="habits_intro_title">Micro-Entrenamientos de 5 Minutos</h2>
+                    <p data-i18n="habits_intro_desc">¿Sin tiempo para el gimnasio? Estos micro-estímulos activan la sensibilidad a la insulina y ayudan a depurar grasa visceral.</p>
+                </div>
+
+                <!-- Interactive Timer Card -->
+                <div class="card premium-card timer-card">
+                    <div class="timer-display">
+                        <span id="timer-minutes">05</span>:<span id="timer-seconds">00</span>
+                    </div>
+                    <div class="timer-details">
+                        <h3 id="current-habit-title">Calf Raises (Elevación de talones)</h3>
+                        <p id="current-habit-desc">Perfecto para hacer de pie en el escritorio. Activa el músculo sóleo que consume glucosa de forma eficiente.</p>
+                    </div>
+                    <div class="timer-controls">
+                        <button class="btn-secondary" id="btn-timer-reset" onclick="resetTimer()" data-i18n="habits_timer_reset">Reiniciar</button>
+                        <button class="btn-primary" id="btn-timer-toggle" onclick="toggleTimer()" data-i18n="habits_timer_start">Iniciar</button>
+                    </div>
+                </div>
+
+                <!-- List of Habits -->
+                <div class="section-title">
+                    <h3 data-i18n="habits_list_title">Selecciona tu Rutina de hoy</h3>
+                </div>
+                <div class="habits-list" id="habits-selector-list">
+                    <!-- Injected by JS -->
+                </div>
+            </section>
+
+            <!-- TAB 5: RESOURCES (MULTIMEDIA & LIBRARY) -->
+            <section id="tab-resources" class="tab-panel">
+                <div class="section-intro">
+                    <h2 data-i18n="resources_intro_title">Biblioteca & Multimedia</h2>
+                    <p data-i18n="resources_intro_desc">Accede a videos prácticos de movilidad, música motivadora para entrenar y guías oficiales de salud hepática sin costo.</p>
+                </div>
+
+                <!-- 1. Music Player Card -->
+                <div class="card premium-card player-card">
+                    <h3 data-i18n="music_player_title">🎵 Gym Power Player</h3>
+                    <div class="player-body">
+                        <div class="player-cover-container">
+                            <div class="player-cover" id="music-cover">💿</div>
+                        </div>
+                        <div class="player-info">
+                            <h4 id="track-title">Cargando canción...</h4>
+                            <span id="track-artist">Cargando artista...</span>
+                            <div class="audio-progress-container">
+                                <span class="time-label" id="current-time">0:00</span>
+                                <input type="range" id="audio-progress" min="0" max="100" value="0" oninput="seekAudio()">
+                                <span class="time-label" id="total-duration">0:00</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="player-controls-row">
+                        <button class="btn-ctrl" onclick="prevTrack()">⏮️</button>
+                        <button class="btn-ctrl btn-play" id="btn-play-music" onclick="togglePlayMusic()">▶️</button>
+                        <button class="btn-ctrl" onclick="nextTrack()">⏭️</button>
+                    </div>
+                    <!-- Hidden audio tag -->
+                    <audio id="main-audio-element" src=""></audio>
+                </div>
+
+                <!-- 2. Video Routine Section -->
+                <div class="section-title" style="margin-top: 1.5rem;">
+                    <h3 data-i18n="video_section_title">Videos de Ejercicios en Casa</h3>
+                </div>
+                <div class="video-grid">
+                    <div class="card video-card">
+                        <div class="video-wrapper">
+                            <video src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4" controls preload="metadata" style="width:100%; height:100%; object-fit:cover;"></video>
+                        </div>
+                        <h4 data-i18n="vid_title_1">5 Mins de Estiramiento de Oficina</h4>
+                        <p data-i18n="vid_desc_1">Rutina guiada de baja intensidad ideal para relajar cuello, espalda y hombros durante el trabajo.</p>
+                    </div>
+
+                    <div class="card video-card">
+                        <div class="video-wrapper">
+                            <video src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4" controls preload="metadata" style="width:100%; height:100%; object-fit:cover;"></video>
+                        </div>
+                        <h4 data-i18n="vid_title_2">Activación Sóleo y Cardio Suave</h4>
+                        <p data-i18n="vid_desc_2">Micro-movilidad enfocada en quemar glucosa rápidamente y favorecer la depuración del hígado.</p>
+                    </div>
+                </div>
+
+                <!-- 3. Library Section -->
+                <div class="section-title" style="margin-top: 1.5rem;">
+                    <h3 data-i18n="library_section_title">Biblioteca Digital Hepática</h3>
+                </div>
+                <div class="library-grid">
+                    <div class="card book-card" onclick="openBookModal('guia_paciente')">
+                        <div class="book-cover color-green">📚</div>
+                        <h4 data-i18n="book_title_1">Guía del Cuidado Hepático</h4>
+                        <span data-i18n="book_author_1">OMS & Salud Pública</span>
+                        <p data-i18n="book_desc_1">Manual oficial abreviado sobre la acumulación grasa y cómo revertirla paso a paso.</p>
+                    </div>
+
+                    <div class="card book-card" onclick="openBookModal('nutricion_basica')">
+                        <div class="book-cover color-gold">📖</div>
+                        <h4 data-i18n="book_title_2">Alimentos del Hígado</h4>
+                        <span data-i18n="book_author_2">Guía Práctica</span>
+                        <p data-i18n="book_desc_2">Recetario básico de bolsillo con ingredientes de bajo costo y alto impacto celular.</p>
+                    </div>
+
+                    <div class="card book-card" onclick="openBookModal('habitos_efectivos')">
+                        <div class="book-cover color-blue">📒</div>
+                        <h4 data-i18n="book_title_3">Hábitos en 5 Minutos</h4>
+                        <span data-i18n="book_author_3">Estilo de Vida</span>
+                        <p data-i18n="book_desc_3">Cómo construir constancia metabólica aunque no tengas tiempo de ir al gimnasio.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- Bottom Navigation Bar -->
+        <nav class="app-nav">
+            <button class="nav-item active" id="nav-dashboard" onclick="switchTab('dashboard')">
+                <span class="nav-icon">📊</span>
+                <span class="nav-label" data-i18n="tab_dashboard">Dashboard</span>
+            </button>
+            <button class="nav-item" id="nav-test" onclick="switchTab('test')">
+                <span class="nav-icon">📋</span>
+                <span class="nav-label" data-i18n="tab_test">Test Hepático</span>
+            </button>
+            <button class="nav-item" id="nav-food" onclick="switchTab('food')">
+                <span class="nav-icon">🥗</span>
+                <span class="nav-label" data-i18n="tab_food">Alimentación</span>
+            </button>
+            <button class="nav-item" id="nav-habits" onclick="switchTab('habits')">
+                <span class="nav-icon">⏱️</span>
+                <span class="nav-label" data-i18n="tab_habits">Hábitos</span>
+            </button>
+            <button class="nav-item" id="nav-resources" onclick="switchTab('resources')">
+                <span class="nav-icon">📚</span>
+                <span class="nav-label" data-i18n="tab_resources">Recursos</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Recipe Detail Modal -->
+    <div id="recipe-modal" class="modal-overlay d-none">
+        <div class="modal-content card">
+            <div class="modal-header">
+                <span class="modal-close" onclick="closeRecipeModal()">&times;</span>
+                <h2 id="modal-recipe-title">Título Receta</h2>
+                <span class="recipe-difficulty" id="modal-recipe-diff">Fácil</span>
+            </div>
+            <div class="modal-body">
+                <h3 data-i18n="recipe_modal_ing">Ingredientes</h3>
+                <ul id="modal-recipe-ingredients"></ul>
+                <h3 style="margin-top: 1.25rem;" data-i18n="recipe_modal_prep">Preparación Paso a Paso</h3>
+                <ol id="modal-recipe-steps"></ol>
+            </div>
+        </div>
+    </div>
+
+    <!-- Book Detail Modal -->
+    <div id="book-modal" class="modal-overlay d-none">
+        <div class="modal-content card">
+            <div class="modal-header">
+                <span class="modal-close" onclick="closeBookModal()">&times;</span>
+                <h2 id="modal-book-title">Título del Libro</h2>
+                <span class="recipe-difficulty" id="modal-book-author" style="background: rgba(245, 158, 11, 0.15); color: var(--text-warning);">Autor</span>
+            </div>
+            <div class="modal-body">
+                <h3 data-i18n="book_modal_sum">Resumen Clínico</h3>
+                <p id="modal-book-summary" style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.45; margin-bottom: 1.25rem;"></p>
+                <h3 data-i18n="book_modal_points">Puntos Clave</h3>
+                <ul id="modal-book-bullets"></ul>
+                <div style="margin-top: 1.5rem;">
+                    <a id="modal-book-download-btn" href="#" target="_blank" class="btn-primary w-full" style="display: block; text-align: center; text-decoration: none;" data-i18n="book_modal_btn">📥 Leer / Descargar PDF Oficial</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Onboarding / Guide Modal -->
+    <div id="onboarding-modal" class="modal-overlay d-none">
+        <div class="modal-content card onboarding-card" style="max-width: 420px; text-align: center; padding: 2rem 1.5rem;">
+            <div class="onboarding-header" style="margin-bottom: 1.5rem;">
+                <span style="font-size: 3rem;">🚀</span>
+                <h2 id="onb-title" style="font-size: 1.4rem; font-weight: 800; margin-top: 0.5rem; color: var(--text-primary);" data-i18n="onb_title">¡Te damos la bienvenida!</h2>
+                <p id="onb-subtitle" style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;" data-i18n="onb_subtitle">Descubre cómo HepaFit AI te ayuda a cuidar tu salud en 3 pasos simples.</p>
+            </div>
+            <div class="onboarding-body" style="text-align: left; background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 12px; border: 1px solid var(--border-color); margin-bottom: 1.5rem;">
+                <div class="onboarding-step" id="onb-step-1">
+                    <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--primary-light); margin-bottom: 0.25rem;" data-i18n="onb_step1_title">1. Haz tu Test Inicial</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;" data-i18n="onb_step1_desc">Ve a la pestaña Test Hepático. Responde 5 preguntas de tu rutina diaria para estimar tu nivel de riesgo y obtener recomendaciones.</p>
+                </div>
+                <div class="onboarding-step d-none" id="onb-step-2">
+                    <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--accent-light); margin-bottom: 0.25rem;" data-i18n="onb_step2_title">2. Elige tu Alimentación</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;" data-i18n="onb_step2_desc">En la sección Alimentación, cambia entre presupuesto Básico (barato) o Premium. Toca cualquier alimento para ver su preparación paso a paso.</p>
+                </div>
+                <div class="onboarding-step d-none" id="onb-step-3">
+                    <h3 style="font-size: 0.95rem; font-weight: 700; color: var(--text-success); margin-bottom: 0.25rem;" data-i18n="onb_step3_title">3. Micro-Hábitos de 5 Mins</h3>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.4;" data-i18n="onb_step3_desc">¿Sin tiempo para el gym? Ve a Hábitos, elige un estiramiento de escritorio y activa el cronómetro para ganar puntos de salud hepática hoy.</p>
+                </div>
+            </div>
+            <div class="onboarding-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                <button class="btn-secondary" id="btn-onb-prev" onclick="prevOnboardingStep()" style="padding: 0.5rem 1rem; font-size: 0.8rem; visibility: hidden;" data-i18n="onb_prev">Atrás</button>
+                <button class="btn-primary" id="btn-onb-next" onclick="nextOnboardingStep()" style="padding: 0.5rem 1.25rem; font-size: 0.8rem;" data-i18n="onb_next">Siguiente</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="app.js"></script>
+</body>
+</html>
