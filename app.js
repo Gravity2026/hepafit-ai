@@ -1,4 +1,4 @@
-﻿// ==========================================
+// ==========================================
 // HEPAFIT AI - APLICACIÓN DE SALUD HEPÁTICA
 // ==========================================
 
@@ -766,15 +766,37 @@ function renderFoodGrid() {
     const grid = document.getElementById("food-items-grid");
     if (!grid) return;
 
-    const foods = foodDatabase[userState.lang][userState.currentBudget];
+    let foods = foodDatabase[userState.lang][userState.currentBudget];
+    
+    // Filter by category if not 'all'
+    if (userState.currentFoodCategory && userState.currentFoodCategory !== 'all') {
+        foods = foods.filter(f => f.cat === userState.currentFoodCategory);
+    }
+
+    if (foods.length === 0) {
+        grid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; color: var(--text-muted); padding: 2rem; font-size: 0.8rem;">${userState.lang === 'es' ? 'No hay alimentos en esta categoría para tu presupuesto.' : 'No foods in this category for your budget.'}</div>`;
+        return;
+    }
+
     grid.innerHTML = foods.map(food => `
-        <div class="food-item" onclick="openRecipeModal('${food.id}')">
-            <div class="food-icon">${food.icon}</div>
-            <div class="food-info">
-                <h4>${food.name}</h4>
-                <div class="food-benefit">${food.benefit}</div>
-                <p>${food.desc}</p>
-                <span class="food-action-tip">${userState.lang === 'es' ? 'Ver Receta & Preparación ➔' : 'View Recipe & Prep ➔'}</span>
+        <div class="food-item">
+            <div class="food-item-header">
+                <div class="food-icon">${food.icon}</div>
+                <div class="food-info">
+                    <h4>${food.name}</h4>
+                    <div class="food-benefit">${food.benefit}</div>
+                </div>
+            </div>
+            <div class="food-item-details">
+                <span class="food-kcal-badge">${food.kcal} kcal</span>
+                <span>P: ${food.protein}g</span>
+                <span>C: ${food.carbs}g</span>
+                <span>G: ${food.fat}g</span>
+            </div>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.4rem; line-height: 1.3;">${food.desc}</p>
+            <div class="food-item-actions">
+                <button class="food-btn-mini" onclick="openRecipeModal('${food.id}')">${userState.lang === 'es' ? 'Receta' : 'Recipe'}</button>
+                <button class="food-btn-mini log-btn" onclick="addFoodToLog('${food.id}')">${userState.lang === 'es' ? '+ Registrar' : '+ Log'}</button>
             </div>
         </div>
     `).join('');
@@ -786,7 +808,7 @@ function openRecipeModal(foodId) {
     if (!food) return;
 
     document.getElementById("modal-recipe-title").textContent = food.name;
-    document.getElementById("modal-recipe-diff").textContent = food.difficulty;
+    document.getElementById("modal-recipe-diff").textContent = `${food.difficulty} (${food.time})`;
     document.getElementById("modal-recipe-ingredients").innerHTML = food.ingredients.map(ing => `<li>${ing}</li>`).join('');
     document.getElementById("modal-recipe-steps").innerHTML = food.steps.map(step => `<li>${step}</li>`).join('');
     
@@ -1509,46 +1531,528 @@ function sendSystemNotification(title, message) {
     }
 }
 
-// Strict Alert Engine Check (Runs every 40 seconds)
-function runCoachAlertCheck() {
+// ==========================================
+// HEPA-COACH STRICT ALERT & COMPLIANCE SYSTEM
+// ==========================================
+
+// Web Audio API Sound Chime Synthesis
+function playWebAudioTone(type) {
+    try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContext) return;
+        const ctx = new AudioContext();
+        
+        const playChime = (freqs, durations, typeOsc = "sine", gainVal = 0.08) => {
+            let time = ctx.currentTime;
+            freqs.forEach((freq, idx) => {
+                const osc = ctx.createOscillator();
+                const gainNode = ctx.createGain();
+                
+                osc.type = typeOsc;
+                osc.frequency.value = freq;
+                
+                gainNode.gain.setValueAtTime(gainVal, time);
+                gainNode.gain.exponentialRampToValueAtTime(0.0001, time + durations[idx]);
+                
+                osc.connect(gainNode);
+                gainNode.connect(ctx.destination);
+                
+                osc.start(time);
+                osc.stop(time + durations[idx]);
+                
+                time += durations[idx] * 0.4; // slight overlap
+            });
+        };
+
+        if (type === 'success') {
+            // Rising success chord
+            playChime([523.25, 659.25, 783.99, 1046.50], [0.15, 0.15, 0.15, 0.3], "sine", 0.08);
+        } else if (type === 'alert') {
+            // High warning double chime
+            playChime([659.25, 659.25], [0.2, 0.35], "triangle", 0.06);
+        } else if (type === 'warning') {
+            // Low error buzz
+            playChime([220.00, 180.00], [0.25, 0.3], "sawtooth", 0.04);
+        } else if (type === 'snooze') {
+            // Warm single chime
+            playChime([392.00], [0.4], "sine", 0.08);
+        }
+    } catch (e) {
+        console.warn("Web Audio Context blocked or not supported: ", e);
+    }
+}
+
+function toggleSimulationMode(enabled) {
     if (!userState.user) return;
+    const prefix = userState.user.username;
+    userState.simulationMode = enabled;
+    localStorage.setItem("hepaSimMode_" + prefix, enabled ? "true" : "false");
+    
+    // Reset timers to now to avoid immediate alarms on switch
+    userState.lastWaterTime = Date.now();
+    userState.lastHabitTime = Date.now();
+    localStorage.setItem("hepaLastWaterTime_" + prefix, userState.lastWaterTime);
+    localStorage.setItem("hepaLastHabitTime_" + prefix, userState.lastHabitTime);
+
+    showToast(
+        "HepaCoach AI", 
+        userState.lang === 'es' 
+            ? `Modo Simulación ${enabled ? 'Activado (Alertas cada 60s)' : 'Desactivado (Modo Real)'}`
+            : `Simulation Mode ${enabled ? 'Enabled (Alerts every 60s)' : 'Disabled (Real Mode)'}`, 
+        "info"
+    );
+
+    startCoachScheduler();
+    updateDashboardUI();
+    renderAlertTimeline();
+}
+
+function startCoachScheduler() {
+    if (userState._alertIntervalId) {
+        clearInterval(userState._alertIntervalId);
+    }
+
+    // Interval: 5 seconds in simulation mode, 15 seconds in real clinical mode
+    const checkInterval = userState.simulationMode ? 5000 : 15000;
+    userState._alertIntervalId = setInterval(runCoachAlertCheck, checkInterval);
+}
+
+function runCoachAlertCheck() {
+    if (!userState.user || userState.pendingAlert) return;
 
     const now = Date.now();
-    const timeSinceWater = now - userState.lastWaterTime;
-    const timeSinceHabit = now - userState.lastHabitTime;
+    const elapsedWater = now - userState.lastWaterTime;
+    const elapsedHabit = now - userState.lastHabitTime;
 
-    // Simulation threshold: 45 seconds of inactivity triggers a strict reminder
-    const threshold = 45000; 
+    // Thresholds:
+    // Simulation: Water = 60s (60000ms), Habit = 90s (90000ms)
+    // Real Clinical: Water = 3 hours (10,800,000ms), Habit = 2 hours (7,200,000ms)
+    const waterThreshold = userState.simulationMode ? 60000 : 10800000;
+    const habitThreshold = userState.simulationMode ? 90000 : 7200000;
 
-    if (timeSinceWater > threshold) {
-        userState.lastWaterTime = now;
-        
-        const title = userState.lang === 'es' ? "💧 ¡HepaCoach: Alerta de Hidratación!" : "💧 HepaCoach: Hydration Alert!";
-        const msg = userState.lang === 'es' 
-            ? "¡Han pasado más de 2 horas desde tu último registro! Bebe 250ml de agua para purificar tu hígado." 
-            : "More than 2 hours since your last drink! Have 250ml of water to cleanse your liver.";
-        
-        showToast(title, msg, "warning");
-        sendSystemNotification(title, msg);
-        
-        userState.healthScore = Math.max(30, userState.healthScore - 2);
-        updateDashboardUI();
-        renderWeeklyChart();
-    } else if (timeSinceHabit > threshold) {
-        userState.lastHabitTime = now;
-        
-        const title = userState.lang === 'es' ? "⏱️ ¡HepaCoach: Alerta de Movimiento!" : "⏱️ HepaCoach: Active Break Alert!";
-        const msg = userState.lang === 'es' 
-            ? "Llevas demasiado tiempo sentado. Haz 5 mins de elevación de talones (sóleo) para limpiar tu glucosa." 
-            : "You've been sitting too long. Do 5 mins of calf raises to clear your blood glucose.";
-        
-        showToast(title, msg, "danger");
-        sendSystemNotification(title, msg);
-        
-        userState.healthScore = Math.max(30, userState.healthScore - 3);
-        updateDashboardUI();
-        renderWeeklyChart();
+    if (elapsedWater > waterThreshold) {
+        triggerCoachAlert('water');
+    } else if (elapsedHabit > habitThreshold) {
+        triggerCoachAlert('habit');
     }
+}
+
+function triggerCoachAlert(type) {
+    userState.pendingAlert = type;
+    
+    const overlay = document.getElementById("active-alert-overlay");
+    if (!overlay) return;
+
+    const iconEl = document.getElementById("alert-banner-icon");
+    const titleEl = document.getElementById("alert-banner-title");
+    const descEl = document.getElementById("alert-banner-desc");
+    
+    const isEs = userState.lang === 'es';
+    
+    if (type === 'water') {
+        if (iconEl) iconEl.textContent = "💧";
+        if (titleEl) titleEl.textContent = isEs ? "¡Alerta de Hidratación!" : "Hydration Alert!";
+        if (descEl) descEl.textContent = isEs 
+            ? "¡Han pasado más de 2 horas sin beber agua! Consume 250ml ahora para purificar tu hígado de toxinas." 
+            : "More than 2 hours since your last drink! Have 250ml of water to cleanse your liver from toxins.";
+    } else {
+        if (iconEl) iconEl.textContent = "⏱️";
+        if (titleEl) titleEl.textContent = isEs ? "¡Alerta de Movimiento!" : "Active Break Alert!";
+        if (descEl) descEl.textContent = isEs 
+            ? "Llevas demasiado tiempo sentado. Haz 5 minutos de elevación de talones (sóleo) o estiramiento activo." 
+            : "You have been sitting for too long. Do 5 minutes of soleus calf raises or active stretching.";
+    }
+
+    // Play native synth audio
+    playWebAudioTone('alert');
+
+    // Show native system notification if permitted
+    const sysTitle = isEs ? "HepaCoach AI Estricto" : "Strict HepaCoach AI";
+    const sysMsg = type === 'water' 
+        ? (isEs ? "¡Hora de beber agua (250ml)!" : "Time to drink water (250ml)!")
+        : (isEs ? "¡Muévete! Haz una pausa activa de 5 mins." : "Move! Take a 5 min active break.");
+    sendSystemNotification(sysTitle, sysMsg);
+
+    // Show floating overlay
+    overlay.classList.remove("d-none");
+}
+
+function handleActiveAlert(action) {
+    const type = userState.pendingAlert;
+    if (!type) return;
+
+    const overlay = document.getElementById("active-alert-overlay");
+    if (overlay) overlay.classList.add("d-none");
+
+    userState.pendingAlert = null;
+    const now = Date.now();
+    const isEs = userState.lang === 'es';
+    const timeStr = new Date().toLocaleTimeString(isEs ? 'es-ES' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+    const prefix = userState.user.username;
+
+    if (action === 'comply') {
+        if (type === 'water') {
+            userState.water += 0.25;
+            userState.lastWaterTime = now;
+            localStorage.setItem("hepaWater_" + prefix, userState.water);
+            localStorage.setItem("hepaLastWaterTime_" + prefix, userState.lastWaterTime);
+        } else {
+            userState.completedHabitsCount = Math.min(4, userState.completedHabitsCount + 1);
+            userState.lastHabitTime = now;
+            localStorage.setItem("hepaCompletedHabitsCount_" + prefix, userState.completedHabitsCount);
+            localStorage.setItem("hepaLastHabitTime_" + prefix, userState.lastHabitTime);
+        }
+
+        userState.healthScore = Math.min(100, userState.healthScore + 4);
+        localStorage.setItem("hepaHealthScore_" + prefix, userState.healthScore);
+
+        userState.alertsLog.push({
+            id: Date.now(),
+            type: type,
+            time: timeStr,
+            status: 'completed',
+            title: type === 'water' ? (isEs ? "Hidratación" : "Hydration") : (isEs ? "Pausa Activa" : "Active Break")
+        });
+
+        playWebAudioTone('success');
+        showToast(
+            "HepaCoach AI", 
+            isEs ? "¡Excelente! Has cumplido y ganado +4 puntos de Score." : "Great job! You complied and gained +4 Score points.", 
+            "success"
+        );
+    } else if (action === 'skip') {
+        if (type === 'water') {
+            userState.lastWaterTime = now;
+            localStorage.setItem("hepaLastWaterTime_" + prefix, userState.lastWaterTime);
+        } else {
+            userState.lastHabitTime = now;
+            localStorage.setItem("hepaLastHabitTime_" + prefix, userState.lastHabitTime);
+        }
+
+        userState.healthScore = Math.max(30, userState.healthScore - 3);
+        localStorage.setItem("hepaHealthScore_" + prefix, userState.healthScore);
+
+        userState.alertsLog.push({
+            id: Date.now(),
+            type: type,
+            time: timeStr,
+            status: 'skipped',
+            title: type === 'water' ? (isEs ? "Hidratación" : "Hydration") : (isEs ? "Pausa Activa" : "Active Break")
+        });
+
+        playWebAudioTone('warning');
+        showToast(
+            "HepaCoach AI", 
+            isEs ? "Alerta omitida. Penalización de -3 puntos de Score." : "Alert skipped. Penalty of -3 Score points.", 
+            "danger"
+        );
+    } else if (action === 'snooze') {
+        // snooze duration: simulation = 30s, real = 5 mins (300,000ms)
+        const snoozeDuration = userState.simulationMode ? 30000 : 300000;
+        const threshold = userState.simulationMode ? 60000 : 10800000;
+
+        if (type === 'water') {
+            userState.lastWaterTime = now - (threshold - snoozeDuration);
+            localStorage.setItem("hepaLastWaterTime_" + prefix, userState.lastWaterTime);
+        } else {
+            const habitThreshold = userState.simulationMode ? 90000 : 7200000;
+            userState.lastHabitTime = now - (habitThreshold - snoozeDuration);
+            localStorage.setItem("hepaLastHabitTime_" + prefix, userState.lastHabitTime);
+        }
+
+        userState.alertsLog.push({
+            id: Date.now(),
+            type: type,
+            time: timeStr,
+            status: 'snoozed',
+            title: type === 'water' ? (isEs ? "Hidratación (Pospuesta)" : "Hydration (Snoozed)") : (isEs ? "Pausa (Pospuesta)" : "Break (Snoozed)")
+        });
+
+        playWebAudioTone('snooze');
+        showToast(
+            "HepaCoach AI", 
+            isEs ? "Alerta pospuesta. Te recordaré pronto." : "Alert snoozed. I will remind you soon.", 
+            "warning"
+        );
+    }
+
+    if (userState.alertsLog.length > 8) {
+        userState.alertsLog.shift();
+    }
+    localStorage.setItem("hepaAlertsLog_" + prefix, JSON.stringify(userState.alertsLog));
+
+    updateDashboardUI();
+    renderAlertTimeline();
+    renderWeeklyChart();
+}
+
+function renderAlertTimeline() {
+    const container = document.getElementById("alert-compliance-timeline");
+    if (!container) return;
+
+    if (userState.alertsLog.length === 0) {
+        container.innerHTML = `<div class="food-log-empty">${userState.lang === 'es' ? 'Sin historial de alertas hoy.' : 'No alert history today.'}</div>`;
+        return;
+    }
+
+    const isEs = userState.lang === 'es';
+    
+    const html = [...userState.alertsLog].reverse().map(log => {
+        let icon = log.type === 'water' ? "💧" : "⏱️";
+        let statusText = "";
+        let badgeClass = log.status;
+        
+        if (log.status === 'completed') statusText = isEs ? "Cumplido" : "Completed";
+        else if (log.status === 'skipped') statusText = isEs ? "Omitido" : "Skipped";
+        else statusText = isEs ? "Pospuesto" : "Snoozed";
+
+        return `
+            <div class="timeline-item">
+                <div class="timeline-badge ${badgeClass}">${icon}</div>
+                <div class="timeline-info">
+                    <div>
+                        <span class="timeline-title">${log.title}</span>
+                        <span class="timeline-time">${log.time}</span>
+                    </div>
+                    <span class="timeline-status ${badgeClass}">${statusText}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    container.innerHTML = html;
+}
+
+// --- FOOD CATEGORY FILTERS ---
+function setFoodCategory(cat) {
+    userState.currentFoodCategory = cat;
+    document.querySelectorAll(".food-filter-btn").forEach(btn => {
+        btn.classList.toggle("active", btn.id === `food-filter-${cat}`);
+    });
+    renderFoodGrid();
+}
+
+// --- FOOD LOGGING LOGIC ---
+function addFoodToLog(foodId) {
+    if (!userState.user) return;
+    const prefix = userState.user.username;
+    
+    const foods = foodDatabase[userState.lang][userState.currentBudget];
+    const food = foods.find(f => f.id === foodId);
+    if (!food) return;
+
+    const logEntry = {
+        logId: Date.now(),
+        id: food.id,
+        name: food.name,
+        icon: food.icon,
+        kcal: food.kcal,
+        protein: food.protein,
+        carbs: food.carbs,
+        fat: food.fat,
+        points: food.points,
+        time: new Date().toLocaleTimeString(userState.lang === 'es' ? 'es-ES' : 'en-US', {hour: '2-digit', minute:'2-digit'})
+    };
+
+    userState.dailyFoodLog.push(logEntry);
+    localStorage.setItem("hepaFoodLog_" + prefix, JSON.stringify(userState.dailyFoodLog));
+
+    // Update Liver Score
+    userState.healthScore = Math.min(100, userState.healthScore + (food.points || 3));
+    localStorage.setItem("hepaHealthScore_" + prefix, userState.healthScore);
+
+    playWebAudioTone('success');
+    showToast(
+        userState.lang === 'es' ? "Comida Registrada" : "Food Logged", 
+        userState.lang === 'es' 
+            ? `Has comido ${food.name}. +${food.points} pts Score Hepático.` 
+            : `Logged ${food.name}. +${food.points} pts Liver Score.`, 
+        "success"
+    );
+
+    updateDashboardUI();
+    updateFoodMetricsUI();
+    renderFoodLog();
+    renderWeeklyChart();
+}
+
+function removeFoodFromLog(logId) {
+    if (!userState.user) return;
+    const prefix = userState.user.username;
+
+    const idx = userState.dailyFoodLog.findIndex(item => item.logId === logId);
+    if (idx === -1) return;
+
+    const item = userState.dailyFoodLog[idx];
+    userState.healthScore = Math.max(30, userState.healthScore - (item.points || 3));
+    localStorage.setItem("hepaHealthScore_" + prefix, userState.healthScore);
+
+    userState.dailyFoodLog.splice(idx, 1);
+    localStorage.setItem("hepaFoodLog_" + prefix, JSON.stringify(userState.dailyFoodLog));
+
+    showToast(
+        userState.lang === 'es' ? "Comida Eliminada" : "Food Removed", 
+        userState.lang === 'es' ? "Alimento removido de tu registro." : "Food removed from your log.", 
+        "warning"
+    );
+
+    updateDashboardUI();
+    updateFoodMetricsUI();
+    renderFoodLog();
+    renderWeeklyChart();
+}
+
+function clearFoodLog() {
+    if (!userState.user) return;
+    const prefix = userState.user.username;
+
+    userState.dailyFoodLog = [];
+    localStorage.setItem("hepaFoodLog_" + prefix, JSON.stringify(userState.dailyFoodLog));
+
+    showToast(
+        userState.lang === 'es' ? "Registro Limpio" : "Log Cleared", 
+        userState.lang === 'es' ? "Se ha limpiado tu registro de comidas de hoy." : "Today's food log cleared.", 
+        "info"
+    );
+
+    updateDashboardUI();
+    updateFoodMetricsUI();
+    renderFoodLog();
+}
+
+function updateFoodMetricsUI() {
+    let totalKcal = 0, totalProtein = 0, totalCarbs = 0, totalFat = 0, totalPoints = 0;
+    
+    userState.dailyFoodLog.forEach(item => {
+        totalKcal += item.kcal || 0;
+        totalProtein += item.protein || 0;
+        totalCarbs += item.carbs || 0;
+        totalFat += item.fat || 0;
+        totalPoints += item.points || 0;
+    });
+
+    const kcalText = document.getElementById("logged-kcal");
+    const proteinText = document.getElementById("logged-protein");
+    const carbsText = document.getElementById("logged-carbs");
+    const fatText = document.getElementById("logged-fat");
+    const pointsBadge = document.getElementById("food-points-badge");
+
+    if (kcalText) kcalText.textContent = `${totalKcal} / 2000 kcal`;
+    if (proteinText) proteinText.textContent = `${totalProtein} / 80g`;
+    if (carbsText) carbsText.textContent = `${totalCarbs} / 220g`;
+    if (fatText) fatText.textContent = `${totalFat} / 65g`;
+    if (pointsBadge) pointsBadge.textContent = `+${totalPoints} HepaPts`;
+
+    const fillKcal = document.getElementById("progress-kcal-fill");
+    const fillProtein = document.getElementById("progress-protein-fill");
+    const fillCarbs = document.getElementById("progress-carbs-fill");
+    const fillFat = document.getElementById("progress-fat-fill");
+
+    if (fillKcal) fillKcal.style.width = `${Math.min(100, (totalKcal / 2000) * 100)}%`;
+    if (fillProtein) fillProtein.style.width = `${Math.min(100, (totalProtein / 80) * 100)}%`;
+    if (fillCarbs) fillCarbs.style.width = `${Math.min(100, (totalCarbs / 220) * 100)}%`;
+    if (fillFat) fillFat.style.width = `${Math.min(100, (totalFat / 65) * 100)}%`;
+}
+
+function renderFoodLog() {
+    const list = document.getElementById("food-log-list");
+    if (!list) return;
+
+    if (userState.dailyFoodLog.length === 0) {
+        list.innerHTML = `<div class="food-log-empty">${userState.lang === 'es' ? 'No has registrado alimentos hoy.' : 'You haven\'t logged any food today.'}</div>`;
+        return;
+    }
+
+    list.innerHTML = userState.dailyFoodLog.map(item => `
+        <div class="logged-food-row">
+            <div class="logged-food-info">
+                <span style="font-size: 1.25rem; margin-right: 0.25rem;">${item.icon}</span>
+                <div>
+                    <strong>${item.name}</strong>
+                    <p style="font-size: 0.65rem; color: var(--text-muted); margin: 0;">${item.time} | P: ${item.protein}g C: ${item.carbs}g G: ${item.fat}g</p>
+                </div>
+            </div>
+            <div class="logged-food-meta">
+                <span class="logged-food-kcal">${item.kcal} kcal</span>
+                <button class="logged-food-del" onclick="removeFoodFromLog(${item.logId})">&times;</button>
+            </div>
+        </div>
+    `).join('');
+}
+
+// --- WEEKLY NUTRITION PLAN ---
+const weeklyNutritionGoals = {
+    es: [
+        { day: "Lunes", goal: "💧 Beber 2 tazas de Té Verde purificador" },
+        { day: "Martes", goal: "🐟 Consumir Salmón u Omega-3 hepático" },
+        { day: "Miércoles", goal: "🌾 Fibra activa: Avena integral al desayuno" },
+        { day: "Jueves", goal: "🧄 Añadir ajo crudo picado a tus comidas" },
+        { day: "Viernes", goal: "🥦 Brócoli o crucíferas al vapor" },
+        { day: "Sábado", goal: "🍋 Cucharada de oliva con zumo de limón" },
+        { day: "Domingo", goal: "🍵 Infusión de Cardo Mariano desintoxicante" }
+    ],
+    en: [
+        { day: "Monday", goal: "💧 Drink 2 cups of purifying Green Tea" },
+        { day: "Tuesday", goal: "🐟 Eat Salmon or clean Omega-3 fats" },
+        { day: "Wednesday", goal: "🌾 Active fiber: Whole oats for breakfast" },
+        { day: "Thursday", goal: "🧄 Add chopped raw garlic to meals" },
+        { day: "Friday", goal: "🥦 Eat steamed broccoli or cruciferous veg" },
+        { day: "Saturday", goal: "🍋 Spoon of olive oil with lemon juice" },
+        { day: "Sunday", goal: "🍵 Detoxifying Milk Thistle infusion" }
+    ]
+};
+
+function renderWeeklyNutritionPlan() {
+    const grid = document.getElementById("weekly-nutrition-plan");
+    if (!grid) return;
+
+    const lang = userState.lang;
+    const goals = weeklyNutritionGoals[lang];
+
+    grid.innerHTML = goals.map((item, idx) => {
+        const isCompleted = userState.weeklyNutritionCompleted[idx];
+        return `
+            <div class="weekly-nutrition-day ${isCompleted ? 'completed' : ''}">
+                <div class="weekly-nutrition-day-header">
+                    <span class="day-name">${item.day}</span>
+                    <input type="checkbox" class="day-checkbox" ${isCompleted ? 'checked' : ''} onchange="toggleWeeklyNutritionDay(${idx}, this.checked)">
+                </div>
+                <p class="day-goal-text">${item.goal}</p>
+            </div>
+        `;
+    }).join('');
+}
+
+function toggleWeeklyNutritionDay(idx, checked) {
+    if (!userState.user) return;
+    const prefix = userState.user.username;
+
+    userState.weeklyNutritionCompleted[idx] = checked;
+    localStorage.setItem("hepaWeeklyNutrition_" + prefix, JSON.stringify(userState.weeklyNutritionCompleted));
+
+    const points = 2;
+    if (checked) {
+        userState.healthScore = Math.min(100, userState.healthScore + points);
+        playWebAudioTone('success');
+        showToast(
+            userState.lang === 'es' ? "Reto Completado" : "Challenge Completed", 
+            userState.lang === 'es' ? "¡Muy bien! Reto nutricional completado. +2 pts." : "Great! Nutrition challenge completed. +2 pts.", 
+            "success"
+        );
+    } else {
+        userState.healthScore = Math.max(30, userState.healthScore - points);
+        showToast(
+            userState.lang === 'es' ? "Reto Desmarcado" : "Challenge Unchecked", 
+            userState.lang === 'es' ? "Se restaron los puntos del reto." : "Challenge points deducted.", 
+            "warning"
+        );
+    }
+    
+    localStorage.setItem("hepaHealthScore_" + prefix, userState.healthScore);
+
+    updateDashboardUI();
+    renderWeeklyNutritionPlan();
+    renderWeeklyChart();
 }
 
 // Scheduler is started in checkSession() after confirmed login

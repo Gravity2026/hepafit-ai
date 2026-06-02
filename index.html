@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -129,7 +129,24 @@
                     <div class="coach-info">
                         <h4 data-i18n="coach_title">HepaCoach AI (Alertas Estrictas)</h4>
                         <p id="coach-status-desc" data-i18n="coach_desc">Recibe avisos para tomar agua y moverte en el trabajo de forma estricta. ¡Haz clic para activar notificaciones del sistema!</p>
-                        <button class="btn-coach-action" onclick="requestNotificationPermission()" id="btn-enable-notifications" data-i18n="btn_enable_notifications">🔔 Activar Alertas Clínicas</button>
+                        <div class="coach-controls-row">
+                            <button class="btn-coach-action" onclick="requestNotificationPermission()" id="btn-enable-notifications" data-i18n="btn_enable_notifications">🔔 Activar Alertas Clínicas</button>
+                            <div class="simulation-toggle-container">
+                                <label class="sim-switch">
+                                    <input type="checkbox" id="sim-mode-checkbox" onchange="toggleSimulationMode(this.checked)">
+                                    <span class="sim-slider round"></span>
+                                </label>
+                                <span class="sim-toggle-label" data-i18n="coach_sim_label">Simulación (60s)</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Alert Compliance History Card -->
+                <div class="card coach-history-card">
+                    <h3 data-i18n="coach_history_title">Historial de Alertas</h3>
+                    <div class="alert-timeline" id="alert-compliance-timeline">
+                        <!-- Alert items injected by JS -->
                     </div>
                 </div>
 
@@ -290,6 +307,52 @@
                     <p data-i18n="food_intro_desc">Diseñada específicamente para la salud del hígado, adaptada a tu presupuesto.</p>
                 </div>
 
+                <!-- Nutrition Metrics Widget -->
+                <div class="card premium-card food-metrics-card">
+                    <div class="food-metrics-header">
+                        <h3 data-i18n="food_metrics_title">Métricas de Hoy</h3>
+                        <div class="food-points-badge" id="food-points-badge">+0 HepaPts</div>
+                    </div>
+                    <div class="food-kcal-progress">
+                        <div class="food-kcal-text">
+                            <span data-i18n="food_metrics_kcal">Calorías Consumidas</span>
+                            <strong id="logged-kcal">0 / 2000 kcal</strong>
+                        </div>
+                        <div class="food-progress-bar">
+                            <div class="food-progress-fill kcal" id="progress-kcal-fill" style="width: 0%;"></div>
+                        </div>
+                    </div>
+                    <div class="food-macros-progress">
+                        <div class="macro-progress-item">
+                            <div class="macro-label">
+                                <span data-i18n="food_metrics_protein">Proteínas</span>
+                                <strong id="logged-protein">0 / 80g</strong>
+                            </div>
+                            <div class="food-progress-bar mini">
+                                <div class="food-progress-fill protein" id="progress-protein-fill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                        <div class="macro-progress-item">
+                            <div class="macro-label">
+                                <span data-i18n="food_metrics_carbs">Carbohidratos</span>
+                                <strong id="logged-carbs">0 / 220g</strong>
+                            </div>
+                            <div class="food-progress-bar mini">
+                                <div class="food-progress-fill carbs" id="progress-carbs-fill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                        <div class="macro-progress-item">
+                            <div class="macro-label">
+                                <span data-i18n="food_metrics_fat">Grasas</span>
+                                <strong id="logged-fat">0 / 65g</strong>
+                            </div>
+                            <div class="food-progress-bar mini">
+                                <div class="food-progress-fill fat" id="progress-fat-fill" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Budget Toggle Switch -->
                 <div class="budget-toggle-container">
                     <span class="toggle-label" data-i18n="food_toggle_label">Ver opciones para presupuesto:</span>
@@ -303,13 +366,41 @@
                     </div>
                 </div>
 
+                <!-- Category Filter Bar -->
+                <div class="food-category-filters">
+                    <button class="food-filter-btn active" onclick="setFoodCategory('all')" id="food-filter-all" data-i18n="food_cat_all">Todos</button>
+                    <button class="food-filter-btn" onclick="setFoodCategory('breakfast')" id="food-filter-breakfast" data-i18n="food_cat_breakfast">Desayuno</button>
+                    <button class="food-filter-btn" onclick="setFoodCategory('lunch')" id="food-filter-lunch" data-i18n="food_cat_lunch">Almuerzo/Cena</button>
+                    <button class="food-filter-btn" onclick="setFoodCategory('snack')" id="food-filter-snack" data-i18n="food_cat_snack">Snacks</button>
+                    <button class="food-filter-btn" onclick="setFoodCategory('beverage')" id="food-filter-beverage" data-i18n="food_cat_beverage">Infusiones</button>
+                </div>
+
                 <!-- Food Cards Grid -->
                 <div class="food-grid" id="food-items-grid">
                     <!-- Food items injected by JavaScript -->
                 </div>
 
+                <!-- My Food Log -->
+                <div class="card food-log-card" style="margin-top: 1.5rem;">
+                    <div class="food-log-header">
+                        <h3 data-i18n="food_log_title">Mi Registro de Comidas</h3>
+                        <button class="btn-text" onclick="clearFoodLog()" style="color: var(--text-danger); font-size: 0.75rem;">Limpiar Registro</button>
+                    </div>
+                    <div class="food-log-list" id="food-log-list">
+                        <!-- Logged meals injected by JS -->
+                    </div>
+                </div>
+
+                <!-- Weekly Hepatic Nutrition Plan -->
+                <div class="card weekly-nutrition-card" style="margin-top: 1.5rem;">
+                    <h3 data-i18n="food_weekly_title">Plan Nutricional Semanal Hepático</h3>
+                    <div class="weekly-nutrition-grid" id="weekly-nutrition-plan">
+                        <!-- Plan days injected by JS -->
+                    </div>
+                </div>
+
                 <!-- Avoid Food List Section -->
-                <div class="card warning-card" style="margin-top: 2rem;">
+                <div class="card warning-card" style="margin-top: 1.5rem;">
                     <h3 data-i18n="food_avoid_title">🚫 Alimentos a Evitar (Enemigos del Hígado)</h3>
                     <p data-i18n="food_avoid_desc">Cualquiera que sea tu presupuesto, reducir estos elementos marcará una diferencia radical:</p>
                     <ul class="avoid-list">
@@ -575,6 +666,27 @@
             <div class="onboarding-footer" style="display: flex; justify-content: space-between; align-items: center;">
                 <button class="btn-secondary" id="btn-onb-prev" onclick="prevOnboardingStep()" style="padding: 0.5rem 1rem; font-size: 0.8rem; visibility: hidden;" data-i18n="onb_prev">Atrás</button>
                 <button class="btn-primary" id="btn-onb-next" onclick="nextOnboardingStep()" style="padding: 0.5rem 1.25rem; font-size: 0.8rem;" data-i18n="onb_next">Siguiente</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Active Alert Banner -->
+    <div id="active-alert-overlay" class="active-alert-overlay d-none">
+        <div class="active-alert-banner card">
+            <div class="alert-banner-header">
+                <span class="alert-banner-icon" id="alert-banner-icon">💧</span>
+                <div class="alert-banner-title-area">
+                    <h3 id="alert-banner-title">¡Alerta de Hidratación!</h3>
+                    <span class="alert-banner-sub" data-i18n="coach_sub">HepaCoach AI (Estricto)</span>
+                </div>
+            </div>
+            <div class="alert-banner-body">
+                <p id="alert-banner-desc">Es hora de beber 250ml de agua purificadora para tu hígado.</p>
+            </div>
+            <div class="alert-banner-actions">
+                <button class="btn-primary" onclick="handleActiveAlert('comply')" id="btn-alert-comply">✅ Cumplido</button>
+                <button class="btn-secondary" onclick="handleActiveAlert('snooze')" id="btn-alert-snooze">⏳ Posponer</button>
+                <button class="btn-danger" onclick="handleActiveAlert('skip')" id="btn-alert-skip">❌ Omitir</button>
             </div>
         </div>
     </div>
